@@ -39,13 +39,41 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <set>
 
 namespace rilib{
-
+	
 	bool nodeSubCheck(int si, int ci, int* map_state_to_node,int* r_out_adj_sizes,int* q_out_adj_sizes,int* r_in_adj_sizes,int* q_in_adj_sizes,void** r_nodes_attrs,void** q_nodes_attrs,AttributeComparator& nodeComparator){
 		if(			r_out_adj_sizes[ci] >= q_out_adj_sizes[map_state_to_node[si]]
 					&& r_in_adj_sizes[ci] >= q_in_adj_sizes[map_state_to_node[si]]){
 			return nodeComparator.compare(r_nodes_attrs[ci], q_nodes_attrs[map_state_to_node[si]]);
 		}
 		return false;
+	}
+
+	bool edgesSubCheck(int si, int ci, int* solution, bool* matched,int* edges_sizes, MaMaEdge * m_flat_edges, int * m_flat_edges_indexes,int* r_out_adj_sizes,int** r_out_adj_list, void*** r_out_adj_attrs, AttributeComparator& edgeComparator){
+		int source, target;
+		int ii;
+		for(int me=0; me<edges_sizes[si]; me++){
+			//printf("siamo qui dentro"); 
+			source = solution[ m_flat_edges[m_flat_edges_indexes[si] + me].source ];
+			target = solution[ m_flat_edges[m_flat_edges_indexes[si] + me].target ];
+
+			for(ii=0; ii< r_out_adj_sizes[source]; ii++){
+				if(r_out_adj_list[source][ii] == target){
+//					if(! edgeComparator.compare(rgraph.out_adj_attrs[source][ii],  mama.edges[si][me].attr)){
+//						return false;
+//					}
+//					else{
+//						break;
+//					}
+					if(edgeComparator.compare(r_out_adj_attrs[source][ii],  m_flat_edges[m_flat_edges_indexes[si] + me].attr)){
+						break;
+					}
+				}
+			}
+			if(ii >= r_out_adj_sizes[source]){
+				return false;
+			}
+		}
+		return true;
 	}
 	
 
@@ -148,7 +176,7 @@ public:
 					if(	  (!matched[ci])
 						&& (cmatched[si].find(ci)==cmatched[si].end())
 						&& nodeSubCheck(si,ci, map_state_to_node, rgraph.out_adj_sizes,qgraph.out_adj_sizes,rgraph.in_adj_sizes,qgraph.in_adj_sizes,rgraph.nodes_attrs,qgraph.nodes_attrs,nodeComparator)
-						&& edgesSubCheck(si, ci, solution, matched)
+						&& edgesSubCheck(si, ci, solution, matched,mama.edges_sizes,mama.flat_edges,mama.flat_edges_indexes,rgraph.out_adj_sizes,rgraph.out_adj_list,rgraph.out_adj_attrs,edgeComparator)
 								){
 						break;
 					}
@@ -209,35 +237,6 @@ public:
     delete[] candidates;
     delete[] listAllRef;
 	}
-
-	bool edgesSubCheck(int si, int ci, int* solution, bool* matched){
-		int source, target;
-		int ii;
-		for(int me=0; me<mama.edges_sizes[si]; me++){
-			//printf("siamo qui dentro"); 
-			source = solution[ mama.flat_edges[mama.flat_edges_indexes[si] + me].source ];
-			target = solution[ mama.flat_edges[mama.flat_edges_indexes[si] + me].target ];
-
-			for(ii=0; ii<rgraph.out_adj_sizes[source]; ii++){
-				if(rgraph.out_adj_list[source][ii] == target){
-//					if(! edgeComparator.compare(rgraph.out_adj_attrs[source][ii],  mama.edges[si][me].attr)){
-//						return false;
-//					}
-//					else{
-//						break;
-//					}
-					if(edgeComparator.compare(rgraph.out_adj_attrs[source][ii],  mama.flat_edges[mama.flat_edges_indexes[si] + me].attr)){
-						break;
-					}
-				}
-			}
-			if(ii >= rgraph.out_adj_sizes[source]){
-				return false;
-			}
-		}
-		return true;
-	}
-
 
 };
 
