@@ -45,12 +45,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Match.h"
 
 //#define FIRST_MATCH_ONLY  //if setted, the searching process stops at the first found match
-#include "Solver.h"
 #include "IsoGISolver.h"
 #include "SubGISolver.h"
 #include "InducedSubGISolver.h"
 
-#define PRINT_MATCHES
+//#define PRINT_MATCHES
 //#define CSV_FORMAT
 
 
@@ -283,6 +282,10 @@ int match(
 	std::cout<<"matching time: "<<match_t<<"\n";
 	std::cout<<"number of found matches: "<<matchcount<<"\n";
 	std::cout<<"search space size: "<<matchedcouples<<"\n";
+	cout << "Pattern Graph load time " << load_t_q << endl; 
+	cout << "mama time: " << make_mama_t << endl;
+	cout << "Target Graphs load time " << load_t<< endl; 
+	cout << "Matching time: " << match_t << endl; 
 #endif
 
 //	delete mama;

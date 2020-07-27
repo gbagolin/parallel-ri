@@ -27,6 +27,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef TIMER_H
 #define TIMER_H
 
+#define WIN32
 #ifdef WIN32 // definita nelle direttive del preprocessore in Visual Studio 7.0
 
 #include <Windows.h>

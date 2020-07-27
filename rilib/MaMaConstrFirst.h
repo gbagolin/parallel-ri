@@ -53,6 +53,8 @@ public:
 		int* t_parent_node = (int*) calloc(nof_sn, sizeof(int));			//indexed by node_id
 		MAMA_PARENTTYPE* t_parent_type = new MAMA_PARENTTYPE[nof_sn];		//indexed by node id
 
+		int total_count = 0; 
+
 		for(int i=0; i<nof_sn; i++){
 			node_flags[i] = NS_UNV;
 			weights[i] = new int[3];
@@ -227,10 +229,12 @@ public:
 			}
 
 			edges_sizes[si] = e_count;
+			total_count += e_count; 
 			o_edges_sizes[si] = o_e_count;
 			i_edges_sizes[si] = i_e_count;
 
 			edges[si] = new MaMaEdge[e_count];
+
 			e_count = 0;
 			for(i=0; i<ssg.out_adj_sizes[n];i++){
 				if(map_node_to_state[ssg.out_adj_list[n][i]] < si){
@@ -240,6 +244,8 @@ public:
 					e_count++;
 				}
 			}
+
+
 //			for(i=0; i<ssg.in_adj_sizes[n];i++){
 //				if(map_node_to_state[ssg.in_adj_list[n][i]] < si){
 //					edges[si][e_count].target = map_node_to_state[n];
@@ -259,6 +265,44 @@ public:
 				}
 			}
 		}
+
+		flat_edges = new MaMaEdge[total_count]; 
+		flat_edges_indexes = new int[nof_sn]; 
+		/*
+		for(int si = 0, c = 0; si < nof_sn; si++){
+			n = map_state_to_node[si];
+
+			for(int i = 0,  j = 0; i < ssg.out_adj_sizes[n]; i++, j++){
+				flat_edges[si + c] = edges[si][j]
+				c++; 
+			}
+
+		}
+		*/
+		for(int si = 0, int c = 0; si < nof_sn; si++){
+
+			flat_edges_indexes[si] = c; 
+
+			for(int j = 0; j < edges_sizes[si]; j++){
+				flat_edges[c + j].source = edges[si][j].source;
+				flat_edges[c + j].target = edges[si][j].target;
+				flat_edges[c + j].attr = edges[si][j].attr;
+			}
+
+			c += edges_sizes[si]; 
+		}
+		/*
+		for(int si = 0, int c = 0; si < nof_sn; si++){
+			for(int j = 0; j < edges_sizes[si]; j++){
+				if(!(flat_edges[c + j].source == edges[si][j].source
+				  && flat_edges[c + j].target == edges[si][j].target
+				  && flat_edges[c + j].attr == edges[si][j].attr)){
+					  printf("ho trovato un valore diverso: %d, %d", flat_edges[c + j].source, edges[si][j].source); 
+				  }
+			}
+			c += edges_sizes[si]; 
+		}
+		*/
 
 		delete[] node_flags;
 		for(int i=0; i<nof_sn; i++)

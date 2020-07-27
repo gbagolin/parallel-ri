@@ -35,7 +35,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "MatchListener.h"
 #include "AttributeComparator.h"
-#include "Solver.h"
 #include "IsoGISolver.h"
 #include "SubGISolver.h"
 #include "InducedSubGISolver.h"
@@ -45,6 +44,7 @@ namespace rilib{
 using namespace rilib;
 
 enum MATCH_TYPE {MT_ISO, MT_INDSUB, MT_MONO};
+
 
 void match(
 		Graph&			reference,
@@ -57,27 +57,53 @@ void match(
 		long* steps,
 		long* triedcouples,
 		long* matchedcouples){
+		
 
-	Solver* solver;
+	
 	switch(matchType){
 	case MT_ISO:
-		solver = new IsoGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator, matchListener);
+		IsoGISolver* solver1;
+		solver1 = new IsoGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator, matchListener,0);
+		solver1->solve();
+
+		*steps = solver1->steps;
+		*triedcouples = solver1->triedcouples;
+		*matchedcouples = solver1->matchedcouples;
+
+		delete solver1;
 		break;
 	case MT_INDSUB:
-		solver = new InducedSubGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator, matchListener);
+		InducedSubGISolver* solver2;
+		solver2 = new InducedSubGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator, matchListener,1);
+		
+		solver2->solve();
+
+		*steps = solver2->steps;
+		*triedcouples = solver2->triedcouples;
+		*matchedcouples = solver2->matchedcouples;
+
+		delete solver2;
+		
 		break;
 	case MT_MONO:
-		solver = new SubGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator, matchListener);
+		SubGISolver* solver3;
+		solver3 = new SubGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator, matchListener,2);
+		
+		
+		solver3->solve();
+
+		*steps = solver3->steps;
+		*triedcouples = solver3->triedcouples;
+		*matchedcouples = solver3->matchedcouples;
+
+		delete solver3;
+
 		break;
 	}
 
-	solver->solve();
-
-	*steps = solver->steps;
-	*triedcouples = solver->triedcouples;
-	*matchedcouples = solver->matchedcouples;
+	
   
-  delete solver;
+  
 };
 
 }

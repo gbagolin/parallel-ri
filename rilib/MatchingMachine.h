@@ -64,11 +64,13 @@ public:
 
 	int nof_sn;
 
-	void** nodes_attrs;				//indexed by state_id
+	void* nodes_attrs;				//indexed by state_id
 	int* edges_sizes;				//indexed by state_id
 	int* o_edges_sizes;				//indexed by state_id
 	int* i_edges_sizes;				//indexed by state_id
 	MaMaEdge** edges;				//indexed by state_id, map on states  (0,1) = (state0, state1)
+	MaMaEdge * flat_edges; 
+	int * flat_edges_indexes; 
 
 	int* map_node_to_state;			//indexed by node_id
 	int* map_state_to_node;			//indexed by state_id
@@ -80,7 +82,6 @@ public:
 	MatchingMachine(Graph& query){
 
 		nof_sn = query.nof_nodes;
-		nodes_attrs = new void*[nof_sn];
 		edges_sizes = (int*) calloc(nof_sn, sizeof(int));
 		o_edges_sizes = (int*) calloc(nof_sn, sizeof(int));
 		i_edges_sizes = (int*) calloc(nof_sn, sizeof(int));
