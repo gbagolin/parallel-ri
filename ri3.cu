@@ -213,12 +213,17 @@ int match(
 
 	FILE *fd = open_file(referencefile.c_str(), filetype);
 	if(fd != NULL){
+		bool printToConsole = false; 
+		long matchCount = 0; 
 #ifdef PRINT_MATCHES
 		//to print found matches on screen
+		
 		MatchListener* matchListener=new ConsoleMatchListener();
+		printToConsole = true; 
 #else
 		//do not print matches, just count them
 		MatchListener* matchListener=new EmptyMatchListener();
+		printToConsole = false;
 #endif
 		int i=0;
 		bool rreaded = true;
@@ -233,7 +238,7 @@ int match(
 			rreaded = (rret == 0);
 			load_t+=end_time(load_s);
 			if(rreaded){
-
+					
 					//run the matching
 					match_s=start_time();
 					match(	*rrg,
@@ -245,22 +250,26 @@ int match(
 							*edgeComparator,
 							&tsteps,
 							&ttriedcouples,
-							&tmatchedcouples);
+							&tmatchedcouples,
+							filetype,
+							&printToConsole,
+							&matchCount
+						);
 					match_t+=end_time(match_s);
 
 					//see rilib/Solver.h
 //					steps += tsteps;
 //					triedcouples += ttriedcouples;
 					matchedcouples += tmatchedcouples;
-
+					tmatchedcouples = 0; 
 				}
         delete rrg;
 				
 			i++;
 		}while(rreaded);
 
-		matchcount = matchListener->matchcount;
-
+		//matchcount = matchListener->matchcount;
+		matchcount = matchCount;
 		delete matchListener;
 
 		fclose(fd);

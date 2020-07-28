@@ -38,6 +38,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "IsoGISolver.h"
 #include "SubGISolver.h"
 #include "InducedSubGISolver.h"
+#include "kernel.h"
 
 namespace rilib{
 
@@ -56,10 +57,36 @@ void match(
 		AttributeComparator& 	edgeComparator,
 		long* steps,
 		long* triedcouples,
-		long* matchedcouples){
+		long* matchedcouples,
+		GRAPH_FILE_TYPE file_type,
+		bool* printToConsole,
+		long * matchCount){
 		
-
-	
+	int comparatorType; 
+	switch(file_type){
+		case GFT_GFU:
+		case GFT_GFD:
+			// only nodes have labels and they are strings
+			comparatorType = 0; 
+			//takeNodeLabels = true;
+			break;
+		case GFT_GFDA:
+			comparatorType = 1; 
+			//takeNodeLabels = true;
+			break;
+		case GFT_EGFU:
+		case GFT_EGFD:
+			//labels on nodes and edges, both of them are strings
+			comparatorType = 2; 
+			//takeNodeLabels = true;
+			//takeEdgesLabels = true;
+			break;
+		case GFT_VFU:
+			//no labels
+			comparatorType = 1; 
+			break;
+    
+	}
 	switch(matchType){
 	case MT_ISO:
 		IsoGISolver* solver1;
@@ -86,27 +113,65 @@ void match(
 		
 		break;
 	case MT_MONO:
-		SubGISolver* solver3;
-		solver3 = new SubGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator, matchListener,2);
-		
-		
-		solver3->solve();
-
-		*steps = solver3->steps;
+		//SubGISolver* solver3;
+		//solver3 = new SubGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator, matchListener,2);
+		/*
+		long steps;
+        long triedcouples;
+        long matchedcouples;
+		*/
+		subsolver(
+        //printToConsole
+        printToConsole,
+        matchCount, 
+        //typeComparator
+        &comparatorType,
+        //Mama
+        &matchingMachine.nof_sn, 
+		matchingMachine.nodes_attrs, 
+		matchingMachine.edges_sizes, 
+        matchingMachine.flat_edges, 
+        matchingMachine.flat_edges_indexes,
+		matchingMachine.map_node_to_state, 			
+		matchingMachine.map_state_to_node,
+		matchingMachine.parent_state,
+		matchingMachine.parent_type,
+        //rgraph
+        &reference.nof_nodes,
+    	reference.in_adj_list, 
+        reference.in_adj_sizes,
+        reference.out_adj_list, 
+        reference.out_adj_sizes,
+        reference.nodes_attrs,
+        reference.out_adj_attrs,
+        //qgraph
+        &query.nof_nodes,
+    	query.in_adj_list, 
+        query.in_adj_sizes,
+        query.out_adj_list, 
+        query.out_adj_sizes,
+        query.nodes_attrs,
+        steps,
+        triedcouples,
+        matchedcouples
+    ); 
+		//solver3->solve();
+	/*
+		steps = solver3->steps;
 		*triedcouples = solver3->triedcouples;
 		*matchedcouples = solver3->matchedcouples;
-
+	
 		delete solver3;
-
+	*/
 		break;
 	}
 
 	
   
   
-};
-
 }
+
+};
 
 
 

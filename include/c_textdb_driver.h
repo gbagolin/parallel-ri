@@ -232,7 +232,6 @@ int read_gfu(const char* fileName, FILE* fd, Graph* graph){
 
 	}
 
-
 	graph->out_adj_list = (int**)malloc(graph->nof_nodes * sizeof(int*));
 	graph->in_adj_list = (int**)malloc(graph->nof_nodes * sizeof(int*));
 	graph->out_adj_attrs = (void***)malloc(graph->nof_nodes * sizeof(void**));
