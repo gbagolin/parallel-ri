@@ -39,6 +39,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "SubGISolver.h"
 #include "InducedSubGISolver.h"
 #include "kernel.h"
+#include "flatter.h"
 
 namespace rilib{
 
@@ -113,6 +114,9 @@ void match(
 		
 		break;
 	case MT_MONO:
+		flatterGraph(&reference);
+		
+		//printf("%d\n",reference.length_nodes_attrs); 
 		//SubGISolver* solver3;
 		//solver3 = new SubGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator, matchListener,2);
 		/*

@@ -173,9 +173,22 @@ int read_gfu(const char* fileName, FILE* fd, Graph* graph){
 			return -1;
 		}
 		graph->nodes_attrs[i] = (char*)malloc((strlen(label) + 1) * sizeof(char));
+
     strcpy((char*)graph->nodes_attrs[i], label);
 	}
+	/*
+	graph -> flatten_nodes_attr = (char * )malloc(graph -> length_nodes_attrs * sizeof(char)); 
+	graph -> indexes_nodes_attr = (int *)malloc(graph -> nof_nodes * sizeof(int)); 
 
+	
+	int total_length = 0; 
+	for(i=0; i<graph->nof_nodes; i++){
+		strcat((char *)graph -> flatten_nodes_attr, (char*)graph->nodes_attrs[i]);
+		graph -> indexes_nodes_attr[i] = total_length; 
+		total_length += strlen((char*)graph->nodes_attrs[i]); 
+	}
+	*/
+	
 	//edges
 	graph->out_adj_sizes = (int*)calloc(graph->nof_nodes, sizeof(int));
 	graph->in_adj_sizes = (int*)calloc(graph->nof_nodes, sizeof(int));
@@ -359,8 +372,7 @@ int read_gfd(const char* fileName, FILE* fd, Graph* graph){
 			ns_o[es] = n;
 		}
 	}
-
-
+	
 	graph->out_adj_list = (int**)malloc(graph->nof_nodes * sizeof(int*));
 	graph->in_adj_list = (int**)malloc(graph->nof_nodes * sizeof(int*));
 	graph->out_adj_attrs = (void***)malloc(graph->nof_nodes * sizeof(void**));

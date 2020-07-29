@@ -41,6 +41,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <set>
 
 
+	void doubleFlatter(void ** ptr, void * retPtr, int * indexes){
+		
+	}
+
+
     __host__ __device__ 
     bool nodeSubCheck(int si, int ci, int* map_state_to_node,int* r_out_adj_sizes,int* q_out_adj_sizes,int* r_in_adj_sizes,int* q_in_adj_sizes,void** r_nodes_attrs,void** q_nodes_attrs, int comparatorType){
 		if(			r_out_adj_sizes[ci] >= q_out_adj_sizes[map_state_to_node[si]]
@@ -79,6 +84,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	}
 
 
+	
+
     void subsolver(
         //printToConsole
         bool* printToConsole,
@@ -110,6 +117,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         int** q_out_adj_list, 
         int* q_out_adj_sizes,
         void** q_nodes_attrs,
+
         long* steps,
         long* triedcouples,
         long* matchedcouples

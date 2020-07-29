@@ -37,14 +37,33 @@ public:
 	int id;
 	int nof_nodes;
 
-	void** nodes_attrs;
+	void** nodes_attrs; //["ciao", "come", "va"]
+	void* flatten_nodes_attr; 
+	int length_nodes_attrs; //10 
+	int * indexes_nodes_attr; //[0,4,8,10]
 
 	int* out_adj_sizes;
 	int* in_adj_sizes;
 
-	int** out_adj_list;
-	int** in_adj_list;
+	int** out_adj_list; //[
+							//[0,1]
+							//[1,2]
+						//]
+	int* flatten_out_adj_list; 
+	int length_out_adj_list; //4
+	int * indexes_out_adj_list; //[0,2]
+
+	int** in_adj_list;			//come sopra
+	int* flatten_in_adj_list; 
+	int length_in_adj_list;
+	int * indexes_in_adj_list;
+
 	void*** out_adj_attrs;
+	void* flatten_out_adj_attrs; 
+	int length_out_adj_attrs;
+	int * indexes_out_adj_attrs; 
+	int * offset_out_adj_attrs; 
+
 
 	Graph(){
 		id = -1;
@@ -55,6 +74,18 @@ public:
 		out_adj_list = NULL;
 		in_adj_list = NULL;
 		out_adj_attrs = NULL;
+		flatten_nodes_attr = NULL;
+		length_nodes_attrs = 0; 
+		indexes_nodes_attr = NULL; 
+		flatten_out_adj_list = NULL; 
+		length_out_adj_list = 0; 
+		indexes_out_adj_list = NULL; 
+		flatten_in_adj_list = NULL; 
+		length_in_adj_list = 0; 
+		indexes_in_adj_list = NULL; 
+		flatten_out_adj_attrs = NULL; 
+		length_out_adj_attrs = 0; 
+		indexes_out_adj_attrs = NULL; 
 	}
   
   ~Graph() {
@@ -66,6 +97,7 @@ public:
       free(in_adj_list[i]);
       free(out_adj_list[i]);
       free(nodes_attrs[i]);
+
     }
     free(out_adj_attrs);
     free(in_adj_list);
@@ -73,6 +105,18 @@ public:
     free(in_adj_sizes);
     free(out_adj_sizes);
     free(nodes_attrs);
+	free(flatten_nodes_attr); 
+	//free(length_nodes_attrs); 
+	free(indexes_nodes_attr); 
+	free(flatten_out_adj_list); 
+	//free(length_out_adj_list); 
+	free(indexes_out_adj_list); 
+	free(flatten_in_adj_list); 
+	//free(length_in_adj_list); 
+	free(indexes_in_adj_list); 
+	free(flatten_out_adj_attrs); 
+	//free(length_out_adj_attrs); 
+	free(indexes_out_adj_attrs);
   }
 
 
