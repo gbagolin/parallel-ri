@@ -104,19 +104,25 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		MAMA_PARENTTYPE* parent_type,
         //rgraph
         int* r_nof_nodes,
-        int** r_in_adj_list, 
+        int* r_in_adj_list, //flatted 
+		int* r_offset_in_adj_list,
         int* r_in_adj_sizes,
-        int** r_out_adj_list, 
+        int* r_out_adj_list,//flatted 
+		int* r_offset_out_adj_list,
         int* r_out_adj_sizes,
-        void** r_nodes_attrs,
+        void* r_nodes_attrs,//flatted
+		int* r_offset_nodes_attr, 
         void*** r_out_adj_attrs,
         //qgraph
         int* q_nof_nodes,
-        int** q_in_adj_list, 
+        int* q_in_adj_list,//flatted 
+		int* q_offset_in_adj_list,
         int* q_in_adj_sizes,
-        int** q_out_adj_list, 
+        int* q_out_adj_list, //flatted
+		int* q_offset_q_out_adj_list, 
         int* q_out_adj_sizes,
-        void** q_nodes_attrs,
+        void* q_nodes_attrs, //flatted
+		int* q_offset_nodes_attr,
 
         long* steps,
         long* triedcouples,
@@ -211,8 +217,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					}
 					else{
 						if(parent_type[sip1] == PARENTTYPE_IN){
+							printf("sono dentro"); 
+							int arr_len = r_offset_in_adj_list[solution[parent_state[sip1]] + 1] - r_offset_in_adj_list[solution[parent_state[sip1]]]; 
+							int * arr = (int *)malloc(arr_len * sizeof(int)); 
+							//for(int i = 0;)
 							candidates[sip1] = r_in_adj_list[solution[parent_state[sip1]]];
 							candidatesSize[sip1] = r_in_adj_sizes[solution[parent_state[sip1]]];
+							printf("%d", arr_len == r_in_adj_sizes[solution[parent_state[sip1]]])
 						}
 						else{//(parent_type[sip1] == MAMA_PARENTTYPE::PARENTTYPE_OUT)
 							candidates[sip1] = r_out_adj_list[solution[parent_state[sip1]]];
