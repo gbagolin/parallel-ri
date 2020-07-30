@@ -48,6 +48,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "IsoGISolver.h"
 #include "SubGISolver.h"
 #include "InducedSubGISolver.h"
+#include "flatter.h"
+#include "mallocUtility.h"
 
 //#define PRINT_MATCHES
 //#define CSV_FORMAT
@@ -194,6 +196,10 @@ int match(
 	Graph *query = new Graph();
 	rret = read_graph(queryfile.c_str(), query, filetype);
 	load_t_q+=end_time(load_s_q);
+
+	//cudaMalloc query
+    query_malloc(*query);
+
 	if(rret !=0){
 		std::cout<<"error on reading query graph\n";
 	}
@@ -202,6 +208,9 @@ int match(
 	MaMaConstrFirst* mama = new MaMaConstrFirst(*query);
 	mama->build(*query);
 	make_mama_t+=end_time(make_mama_s);
+    flatterGraph(query);
+
+    mama_malloc(*mama);
 
 	//mama->print();
 
@@ -237,6 +246,9 @@ int match(
 			int rret = read_dbgraph(referencefile.c_str(), fd, rrg, filetype);
 			rreaded = (rret == 0);
 			load_t+=end_time(load_s);
+
+            reference_malloc(*rrg);
+
 			if(rreaded){
 					
 					//run the matching

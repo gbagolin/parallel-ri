@@ -35,6 +35,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Graph.h"
 
+
 namespace rilib{
 
 class MaMaConstrFirst : public MatchingMachine{
@@ -51,7 +52,7 @@ public:
 		NodeFlag* node_flags = new NodeFlag[nof_sn]; 						//indexed by node_id
 		int** weights = new int*[nof_sn];									//indexed by node_id
 		int* t_parent_node = (int*) calloc(nof_sn, sizeof(int));			//indexed by node_id
-		MAMA_PARENTTYPE* t_parent_type = new MAMA_PARENTTYPE[nof_sn];		//indexed by node id
+		int* t_parent_type = new int[nof_sn];		//indexed by node id
 
 		int total_count = 0; 
 
@@ -63,9 +64,8 @@ public:
 			//weights[i][2] = ssg.out_adj_sizes[i] + ssg.in_adj_sizes[i];
 			weights[i][2] = ssg.out_adj_sizes[i] + ssg.in_adj_sizes[i];
 			t_parent_node[i] = -1;
-			t_parent_type[i] = PARENTTYPE_NULL;
+			t_parent_type[i] = 2;
 		}
-
 
 
 
@@ -94,7 +94,7 @@ public:
 				}
 				map_state_to_node[si] = maxi;
 				map_node_to_state[maxi] = si;
-				t_parent_type[maxi] = PARENTTYPE_NULL;
+				t_parent_type[maxi] = 2;
 				t_parent_node[maxi] = -1;
 
 				nqueueR++;
@@ -148,9 +148,9 @@ public:
 						node_flags[ni] = NS_CNEIGH;
 						t_parent_node[ni] = n;
 //						if(nIT < ssg.out_adj_sizes[n])
-							t_parent_type[ni] = PARENTTYPE_OUT;
+							t_parent_type[ni] = 1;
 //						else
-//							t_parent_type[ni] = PARENTTYPE_IN;
+//							t_parent_type[ni] = 0;
 						//add to queue
 						map_state_to_node[nqueueR] = ni;
 						map_node_to_state[ni] = nqueueR;
@@ -178,9 +178,9 @@ public:
 						node_flags[ni] = NS_CNEIGH;
 						t_parent_node[ni] = n;
 //						if(nIT < ssg.out_adj_sizes[n])
-//							t_parent_type[ni] = PARENTTYPE_OUT;
+//							t_parent_type[ni] = 1;
 //						else
-							t_parent_type[ni] = PARENTTYPE_IN;
+							t_parent_type[ni] = 0;
 						//add to queue
 						map_state_to_node[nqueueR] = ni;
 						map_node_to_state[ni] = nqueueR;
@@ -241,6 +241,7 @@ public:
 					edges[si][e_count].source = map_node_to_state[n];
 					edges[si][e_count].target = map_node_to_state[ssg.out_adj_list[n][i]];
 					edges[si][e_count].attr = ssg.out_adj_attrs[n][i];
+
 					e_count++;
 				}
 			}

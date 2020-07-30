@@ -1,4 +1,25 @@
 
+
+
+/**
+* Get the substring from a flatted array of string
+* @param nodes_attrs
+* @param start
+* @param end
+* @return
+*/
+__host__ __device__
+void * getSubString(void * nodes_attrs,int start, int end){
+    int len = end - start + 1;
+    char * sub_string = (char *)malloc(len*sizeof(char));
+    int pos = 0;
+    for (int i = start; i < end; ++i,++pos) {
+        sub_string[pos] = ((char*)nodes_attrs)[i];
+    }
+    sub_string[pos] = '\0';
+    return (void*)sub_string;
+}
+
     __host__ __device__     
     int strcmp (const char *p1, const char *p2)
     {

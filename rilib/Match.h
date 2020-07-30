@@ -41,143 +41,180 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "kernel.h"
 #include "flatter.h"
 
-namespace rilib{
+namespace rilib {
 
-using namespace rilib;
+    int *d_r_nof_nodes;
+    int *d_r_flatten_in_adj_list;
+    int *d_r_offset_in_adj_list;
+    int *d_r_in_adj_sizes;
+    int *d_r_flatten_out_adj_list;
+    int *d_r_offset_out_adj_list;
+    int *d_r_out_adj_sizes;
+    void *d_r_flatten_nodes_attr;
+    int *d_r_offset_nodes_attr;
+    void *d_r_out_adj_attrs = NULL;
 
-enum MATCH_TYPE {MT_ISO, MT_INDSUB, MT_MONO};
+    int *d_q_nof_nodes;
+    int *d_q_flatten_in_adj_list;
+    int *d_q_offset_in_adj_list;
+    int *d_q_in_adj_sizes;
+    int *d_q_flatten_out_adj_list;
+    int *d_q_offset_out_adj_list;
+    int *d_q_out_adj_sizes;
+    void *d_q_flatten_nodes_attr;
+    int *d_q_offset_nodes_attr;
+
+    int *d_nof_sn;
+    int *d_edges_sizes;
+    MaMaEdge * d_flat_edges;
+    int *d_flat_edges_indexes;
+    int *d_map_node_to_state;
+    int *d_map_state_to_node;
+    int *d_parent_state;
+    int *d_parent_type;
+
+    using namespace rilib;
+
+    enum MATCH_TYPE {
+        MT_ISO, MT_INDSUB, MT_MONO
+    };
 
 
-void match(
-		Graph&			reference,
-		Graph& 			query,
-		MatchingMachine&		matchingMachine,
-		MatchListener& 			matchListener,
-		MATCH_TYPE 				matchType,
-		AttributeComparator& 	nodeComparator,
-		AttributeComparator& 	edgeComparator,
-		long* steps,
-		long* triedcouples,
-		long* matchedcouples,
-		GRAPH_FILE_TYPE file_type,
-		bool* printToConsole,
-		long * matchCount){
-		
-	int comparatorType; 
-	switch(file_type){
-		case GFT_GFU:
-		case GFT_GFD:
-			// only nodes have labels and they are strings
-			comparatorType = 0; 
-			//takeNodeLabels = true;
-			break;
-		case GFT_GFDA:
-			comparatorType = 1; 
-			//takeNodeLabels = true;
-			break;
-		case GFT_EGFU:
-		case GFT_EGFD:
-			//labels on nodes and edges, both of them are strings
-			comparatorType = 2; 
-			//takeNodeLabels = true;
-			//takeEdgesLabels = true;
-			break;
-		case GFT_VFU:
-			//no labels
-			comparatorType = 1; 
-			break;
-    
-	}
-	switch(matchType){
-	case MT_ISO:
-		IsoGISolver* solver1;
-		solver1 = new IsoGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator, matchListener,0);
-		solver1->solve();
+    void match(
+            Graph &reference,
+            Graph &query,
+            MatchingMachine &matchingMachine,
+            MatchListener &matchListener,
+            MATCH_TYPE matchType,
+            AttributeComparator &nodeComparator,
+            AttributeComparator &edgeComparator,
+            long *steps,
+            long *triedcouples,
+            long *matchedcouples,
+            GRAPH_FILE_TYPE file_type,
+            bool *printToConsole,
+            long *matchCount) {
 
-		*steps = solver1->steps;
-		*triedcouples = solver1->triedcouples;
-		*matchedcouples = solver1->matchedcouples;
+        int comparatorType;
+        switch (file_type) {
+            case GFT_GFU:
+            case GFT_GFD:
+                // only nodes have labels and they are strings
+                comparatorType = 0;
+                //takeNodeLabels = true;
+                break;
+            case GFT_GFDA:
+                comparatorType = 1;
+                //takeNodeLabels = true;
+                break;
+            case GFT_EGFU:
+            case GFT_EGFD:
+                //labels on nodes and edges, both of them are strings
+                comparatorType = 2;
+                //takeNodeLabels = true;
+                //takeEdgesLabels = true;
+                break;
+            case GFT_VFU:
+                //no labels
+                comparatorType = 1;
+                break;
 
-		delete solver1;
-		break;
-	case MT_INDSUB:
-		InducedSubGISolver* solver2;
-		solver2 = new InducedSubGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator, matchListener,1);
-		
-		solver2->solve();
+        }
+        switch (matchType) {
+            case MT_ISO:
+                IsoGISolver *solver1;
+                solver1 = new IsoGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator,
+                                          matchListener, 0);
+                solver1->solve();
 
-		*steps = solver2->steps;
-		*triedcouples = solver2->triedcouples;
-		*matchedcouples = solver2->matchedcouples;
+                *steps = solver1->steps;
+                *triedcouples = solver1->triedcouples;
+                *matchedcouples = solver1->matchedcouples;
 
-		delete solver2;
-		
-		break;
-	case MT_MONO:
-		flatterGraph(&reference);
-		
-		//printf("%d\n",reference.length_nodes_attrs); 
-		//SubGISolver* solver3;
-		//solver3 = new SubGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator, matchListener,2);
-		/*
-		long steps;
-        long triedcouples;
-        long matchedcouples;
-		*/
-		subsolver(
-        //printToConsole
-        printToConsole,
-        matchCount, 
-        //typeComparator
-        &comparatorType,
-        //Mama
-        &matchingMachine.nof_sn, 
-		matchingMachine.nodes_attrs, 
-		matchingMachine.edges_sizes, 
-        matchingMachine.flat_edges, 
-        matchingMachine.flat_edges_indexes,
-		matchingMachine.map_node_to_state, 			
-		matchingMachine.map_state_to_node,
-		matchingMachine.parent_state,
-		matchingMachine.parent_type,
-        //rgraph
-        &reference.nof_nodes,
-    	reference.in_adj_list, 
-        reference.in_adj_sizes,
-        reference.out_adj_list, 
-        reference.out_adj_sizes,
-        reference.nodes_attrs,
-        reference.out_adj_attrs,
-        //qgraph
-        &query.nof_nodes,
-    	query.in_adj_list, 
-        query.in_adj_sizes,
-        query.out_adj_list, 
-        query.out_adj_sizes,
-        query.nodes_attrs,
-        steps,
-        triedcouples,
-        matchedcouples
-    ); 
-		//solver3->solve();
-	/*
-		steps = solver3->steps;
-		*triedcouples = solver3->triedcouples;
-		*matchedcouples = solver3->matchedcouples;
-	
-		delete solver3;
-	*/
-		break;
-	}
+                delete solver1;
+                break;
+            case MT_INDSUB:
+                InducedSubGISolver *solver2;
+                solver2 = new InducedSubGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator,
+                                                 matchListener, 1);
 
-	
-  
-  
-}
+                solver2->solve();
+
+                *steps = solver2->steps;
+                *triedcouples = solver2->triedcouples;
+                *matchedcouples = solver2->matchedcouples;
+
+                delete solver2;
+
+                break;
+            case MT_MONO:
+                flatterGraph(&reference);
+                //printf("%d\n",reference.length_nodes_attrs);
+                //SubGISolver* solver3;
+                //solver3 = new SubGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator, matchListener,2);
+                /*
+                long steps;
+                long triedcouples;
+                long matchedcouples;
+                */
+
+
+
+                subsolver(
+                        //printToConsole
+                        printToConsole,
+                        matchCount,
+                        //typeComparator
+                        &comparatorType,
+                        //Mama
+                        &matchingMachine.nof_sn,
+                        matchingMachine.edges_sizes,
+                        matchingMachine.flat_edges,
+                        matchingMachine.flat_edges_indexes,
+                        matchingMachine.map_node_to_state,
+                        matchingMachine.map_state_to_node,
+                        matchingMachine.parent_state,
+                        matchingMachine.parent_type,
+                        //rgraph
+                        d_r_nof_nodes,
+                        d_r_flatten_in_adj_list,
+                        d_r_offset_in_adj_list,
+                        d_r_in_adj_sizes,
+                        d_r_flatten_out_adj_list,
+                        d_r_offset_out_adj_list,
+                        d_r_out_adj_sizes,
+                        d_r_flatten_nodes_attr,
+                        d_r_offset_nodes_attr,
+                        d_r_out_adj_attrs,
+                        //qgraph
+                        d_q_nof_nodes,
+                        d_q_flatten_in_adj_list,
+                        d_q_offset_in_adj_list,
+                        d_q_in_adj_sizes,
+                        d_q_flatten_out_adj_list,
+                        d_q_offset_out_adj_list,
+                        d_q_out_adj_sizes,
+                        d_q_flatten_nodes_attr,
+                        d_q_offset_nodes_attr,
+                        steps,
+                        triedcouples,
+                        matchedcouples
+                );
+                //solver3->solve();
+                /*
+                    steps = solver3->steps;
+                    *triedcouples = solver3->triedcouples;
+                    *matchedcouples = solver3->matchedcouples;
+
+                    delete solver3;
+                */
+                break;
+        }
+
+
+    }
 
 };
-
-
 
 
 #endif /* MATCH_H_ */

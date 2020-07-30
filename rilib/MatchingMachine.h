@@ -76,7 +76,7 @@ public:
 	int* map_state_to_node;			//indexed by state_id
 
 	int* parent_state;				//indexed by state_id
-	MAMA_PARENTTYPE* parent_type;	//indexed by state id
+	int* parent_type;	//indexed by state id
 
 
 	MatchingMachine(Graph& query){
@@ -90,12 +90,13 @@ public:
 		map_node_to_state = (int*) calloc(nof_sn, sizeof(int));
 		map_state_to_node = (int*) calloc(nof_sn, sizeof(int));
 		parent_state = (int*) calloc(nof_sn, sizeof(int));
-		parent_type = new MAMA_PARENTTYPE[nof_sn];
+		parent_type = new int[nof_sn];
 
 		//build(query);
 	}
 
 	virtual ~MatchingMachine(){
+
 		delete[] nodes_attrs;
 		for(int i=0; i<nof_sn; i++){
 			delete[] edges[i];
@@ -127,13 +128,13 @@ public:
 		for(int i=0; i<nof_sn; i++){
 			std::cout<<"| \t\t["<<i<<"] ("<<map_state_to_node[i]<<") ("<<parent_state[i]<<", ";
 			switch(parent_type[i]){
-			case PARENTTYPE_IN:
+			case 0:
 				std::cout<<"IN";
 				break;
-			case PARENTTYPE_OUT:
+			case 1:
 				std::cout<<"OUT";
 				break;
-			case PARENTTYPE_NULL:
+			case 2:
 				std::cout<<"NULL";
 				break;
 			}

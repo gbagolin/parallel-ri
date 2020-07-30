@@ -18,7 +18,6 @@
 
 void flatterGraph(Graph *graph)
 {
-
     //flatten node_attrs
     for (int i = 0; i < graph->nof_nodes; i++)
     {
@@ -28,7 +27,7 @@ void flatterGraph(Graph *graph)
     graph->length_nodes_attrs++;
 
     graph->flatten_nodes_attr = (char *)malloc(graph->length_nodes_attrs * sizeof(char));
-    graph->indexes_nodes_attr = (int *)malloc((graph->nof_nodes + 1) * sizeof(int));
+    graph->offset_nodes_attr = (int *)malloc((graph->nof_nodes + 1) * sizeof(int));
 
     //strcpy((char *)graph -> flatten_nodes_attr,"");
     ((char *)graph->flatten_nodes_attr)[0] = '\0';
@@ -117,34 +116,36 @@ void flatterGraph(Graph *graph)
         }
     }
     pos = 0; 
-    /*
+
     //test out_adj_sizes
     for (int i = 0; i < graph->nof_nodes; i++)
     {
         for (int j = 0; j < graph->out_adj_sizes[i]; j++)
         {
             if(graph->flatten_out_adj_list[graph -> offset_out_adj_list[i] + j] != graph->out_adj_list[i][j]){
-                printf("test failed\n"); 
+                printf("test failed 1\n");
             }
             else{
                // printf("test passed\n");
             }
         }
     }
+
     //test in_adj_list
     for (int i = 0; i < graph->nof_nodes; i++)
     {
         for (int j = 0; j < graph->in_adj_sizes[i]; j++)
         {
             if(graph->flatten_in_adj_list[graph -> offset_in_adj_list[i] + j] != graph->in_adj_list[i][j]){
-                printf("test failed\n"); 
+                printf("test failed 2\n");
             }
             else{
                 //printf("test passed\n");
             }
         }
     }
-    */
+
+
 
 }
 

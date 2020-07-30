@@ -41,212 +41,250 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <set>
 
 
-	void doubleFlatter(void ** ptr, void * retPtr, int * indexes){
-		
-	}
+__host__ __device__
 
+bool
+nodeSubCheck(int si, int ci, int *map_state_to_node, int *r_out_adj_sizes, int *q_out_adj_sizes, int *r_in_adj_sizes,
+             int *q_in_adj_sizes, void *r_nodes_attrs, int * r_offset_nodes_attr, void *q_nodes_attrs, int * q_offset_nodes_attr, int comparatorType) {
+    if (r_out_adj_sizes[ci] >= q_out_adj_sizes[map_state_to_node[si]]
+        && r_in_adj_sizes[ci] >= q_in_adj_sizes[map_state_to_node[si]]) {
 
-    __host__ __device__ 
-    bool nodeSubCheck(int si, int ci, int* map_state_to_node,int* r_out_adj_sizes,int* q_out_adj_sizes,int* r_in_adj_sizes,int* q_in_adj_sizes,void** r_nodes_attrs,void** q_nodes_attrs, int comparatorType){
-		if(			r_out_adj_sizes[ci] >= q_out_adj_sizes[map_state_to_node[si]]
-					&& r_in_adj_sizes[ci] >= q_in_adj_sizes[map_state_to_node[si]]){
-			return nodeComparator(comparatorType, r_nodes_attrs[ci], q_nodes_attrs[map_state_to_node[si]]);
-		}
-		return false;
-	}
-    __host__ __device__ 
-	bool edgesSubCheck(int si, int ci, int* solution, bool* matched,int* edges_sizes, MaMaEdge * m_flat_edges, int * m_flat_edges_indexes,int* r_out_adj_sizes,int** r_out_adj_list, void*** r_out_adj_attrs, int comparatorType){
-		int source, target;
-		int ii;
-		for(int me=0; me<edges_sizes[si]; me++){
-			//printf("siamo qui dentro"); 
-			source = solution[ m_flat_edges[m_flat_edges_indexes[si] + me].source ];
-			target = solution[ m_flat_edges[m_flat_edges_indexes[si] + me].target ];
+        int r_start = r_offset_nodes_attr[ci];
+        int r_end = r_offset_nodes_attr[ci+1];
+        int q_start = q_offset_nodes_attr[map_state_to_node[si]];
+        int q_end = q_offset_nodes_attr[map_state_to_node[si] + 1];
+        void * q_str_attr = getSubString(q_nodes_attrs,q_start,q_end);
+        void * r_str_attr = getSubString(r_nodes_attrs,r_start,r_end);
+        return nodeComparator(comparatorType, r_str_attr, q_str_attr);
+    }
+    return false;
+}
 
-			for(ii=0; ii< r_out_adj_sizes[source]; ii++){
-				if(r_out_adj_list[source][ii] == target){
+__host__ __device__
+
+bool edgesSubCheck(int si, int ci, int *solution, bool *matched, int *edges_sizes, MaMaEdge *m_flat_edges,
+                   int *m_flat_edges_indexes, int *r_out_adj_sizes, int *r_out_adj_list, int * r_offset_out_adj_list,
+                   int comparatorType) {
+    int source, target;
+    int ii;
+    for (int me = 0; me < edges_sizes[si]; me++) {
+        //printf("siamo qui dentro");
+        source = solution[m_flat_edges[m_flat_edges_indexes[si] + me].source];
+        target = solution[m_flat_edges[m_flat_edges_indexes[si] + me].target];
+
+        for (ii = 0; ii < r_out_adj_sizes[source]; ii++) {
+            int index = r_offset_out_adj_list[source] + ii;
+            if (r_out_adj_list[index] == target) {
 //					if(! edgeComparator.compare(rgraph.out_adj_attrs[source][ii],  mama.edges[si][me].attr)){
 //						return false;
 //					}
 //					else{
 //						break;
 //					}
-					if(edgeComparator(comparatorType, r_out_adj_attrs[source][ii],  m_flat_edges[m_flat_edges_indexes[si] + me].attr)){
-						break;
-					}
-				}
-			}
-			if(ii >= r_out_adj_sizes[source]){
-				return false;
-			}
-		}
-		return true;
-	}
+                if (edgeComparator(comparatorType, NULL,
+                                   m_flat_edges[m_flat_edges_indexes[si] + me].attr)) {
+                    break;
+                }
+            }
+        }
+        if (ii >= r_out_adj_sizes[source]) {
+            return false;
+        }
+    }
+    return true;
+}
 
 
-	
-
-    void subsolver(
+void subsolver(
         //printToConsole
-        bool* printToConsole,
-        long* matchCount, 
+        bool *printToConsole,
+        long *matchCount,
         //typeComparator
-        int* type_comparator,
+        int *type_comparator,
         //Mama
-        int * nof_sn, 
-		void* nodes_attrs, 
-		int* edges_sizes, 
-        MaMaEdge* flat_edges, 
-        int* flat_edges_indexes,
-		int* map_node_to_state, 			
-		int* map_state_to_node,
-		int* parent_state,
-		MAMA_PARENTTYPE* parent_type,
+        int *nof_sn,
+        int *edges_sizes,
+        MaMaEdge *flat_edges,
+        int *flat_edges_indexes,
+        int *map_node_to_state,
+        int *map_state_to_node,
+        int *parent_state,
+        int *parent_type,
         //rgraph
-        int* r_nof_nodes,
-        int* r_in_adj_list, //flatted 
-		int* r_offset_in_adj_list,
-        int* r_in_adj_sizes,
-        int* r_out_adj_list,//flatted 
-		int* r_offset_out_adj_list,
-        int* r_out_adj_sizes,
-        void* r_nodes_attrs,//flatted
-		int* r_offset_nodes_attr, 
-        void*** r_out_adj_attrs,
+        int *r_nof_nodes,
+        int *r_in_adj_list, //flatted
+        int *r_offset_in_adj_list,
+        int *r_in_adj_sizes,
+        int *r_out_adj_list,//flatted
+        int *r_offset_out_adj_list,
+        int *r_out_adj_sizes,
+        void *r_nodes_attrs,//flatted
+        int *r_offset_nodes_attr,
+        void *r_out_adj_attrs,
         //qgraph
-        int* q_nof_nodes,
-        int* q_in_adj_list,//flatted 
-		int* q_offset_in_adj_list,
-        int* q_in_adj_sizes,
-        int* q_out_adj_list, //flatted
-		int* q_offset_q_out_adj_list, 
-        int* q_out_adj_sizes,
-        void* q_nodes_attrs, //flatted
-		int* q_offset_nodes_attr,
+        int *q_nof_nodes,
+        int *q_in_adj_list,//flatted
+        int *q_offset_in_adj_list,
+        int *q_in_adj_sizes,
+        int *q_out_adj_list, //flatted
+        int *q_offset_q_out_adj_list,
+        int *q_out_adj_sizes,
+        void *q_nodes_attrs, //flatted
+        int *q_offset_nodes_attr,
 
-        long* steps,
-        long* triedcouples,
-        long* matchedcouples
-    ){
-        
-        int ii; 
-        int* listAllRef = new int[*r_nof_nodes];
-		for(ii=0; ii<*r_nof_nodes; ii++)
-			listAllRef[ii] = ii;
+        long *steps,
+        long *triedcouples,
+        long *matchedcouples
+) {
 
-		int** candidates = new int*[*nof_sn];							//indexed by state_id
-		int* candidatesIT = new int[*nof_sn];							//indexed by state_id
-		int* candidatesSize = new int[*nof_sn];							//indexed by state_id
-		int* solution = new int[*nof_sn];							
-        //indexed by state_id
-		for(ii=0; ii<*nof_sn; ii++){
-			solution[ii] = -1;
-		}
+    int ii;
+    int *listAllRef = new int[*r_nof_nodes];
+    for (ii = 0; ii < *r_nof_nodes; ii++)
+        listAllRef[ii] = ii;
 
-		std:set<int>* cmatched = new std::set<int>[*nof_sn];
+    int **candidates = new int *[*nof_sn];                            //indexed by state_id
+    int *candidatesIT = new int[*nof_sn];                            //indexed by state_id
+    int *candidatesSize = new int[*nof_sn];                            //indexed by state_id
+    int *solution = new int[*nof_sn];
+    //indexed by state_id
+    for (ii = 0; ii < *nof_sn; ii++) {
+        solution[ii] = -1;
+    }
 
-		bool* matched = (bool*) calloc(*r_nof_nodes, sizeof(bool));		//indexed by node_id
+    /*
+    //std::set<int> *cmatched = new std::set<int>[*nof_sn];
+    bool ** cmatched = (bool **)malloc(*nof_sn * sizeof(bool));
+    for (int i = 0; i < *nof_sn; ++i) {
+        cmatched[i] = (bool *)malloc(*r_nof_nodes * sizeof(bool));
+    }
 
-		candidates[0] = listAllRef;
-		candidatesSize[0] = *r_nof_nodes;
-		candidatesIT[0] = -1;
+    */
+    bool cmatched[1000][1000];
 
-		int psi = -1;
-		int si = 0;
-		int ci = -1;
-		int sip1;
-		
-		while(si != -1){
-			//steps++;
+    //printf("%i, %i, %i\n", *nof_sn, *r_nof_nodes, *q_nof_nodes);
 
-			if(psi >= si){
-				matched[solution[si]] = false;
-			}
+    bool *matched = (bool *) calloc(*r_nof_nodes, sizeof(bool));        //indexed by node_id
 
-			ci = -1;
-			candidatesIT[si]++;
-			while(candidatesIT[si] < candidatesSize[si]){
-				//triedcouples++;
+    candidates[0] = listAllRef;
+    candidatesSize[0] = *r_nof_nodes;
+    candidatesIT[0] = -1;
 
-				ci = candidates[si][candidatesIT[si]];
-				solution[si] = ci;
+    int psi = -1;
+    int si = 0;
+    int ci = -1;
+    int sip1;
+
+    while (si != -1) {
+
+        //steps++;
+
+        if (psi >= si) {
+            matched[solution[si]] = false;
+        }
+
+        ci = -1;
+        candidatesIT[si]++;
+        while (candidatesIT[si] < candidatesSize[si]) {
+            //triedcouples++;
+
+            ci = candidates[si][candidatesIT[si]];
+            solution[si] = ci;
 
 //				std::cout<<"[ "<<map_state_to_node[si]<<" , "<<ci<<" ]\n";
 //				if(matched[ci]) std::cout<<"fails on alldiff\n";
 //				if(!nodeCheck(si,ci, map_state_to_node)) std::cout<<"fails on node label\n";
 //				if(!(edgesCheck(si, ci, solution, matched))) std::cout<<"fails on edges \n";
-				
-				//MT_ISO
-				
-					if(	  (!matched[ci])
-						&& (cmatched[si].find(ci)==cmatched[si].end())
-						&& nodeSubCheck(si,ci, map_state_to_node, r_out_adj_sizes,q_out_adj_sizes,r_in_adj_sizes,q_in_adj_sizes,r_nodes_attrs,q_nodes_attrs,*type_comparator)
-						&& edgesSubCheck(si, ci, solution, matched,edges_sizes,flat_edges,flat_edges_indexes,r_out_adj_sizes,r_out_adj_list,r_out_adj_attrs,*type_comparator)
-								){
-						break;
-					}
-					else{
-						ci = -1;
-					}
-				
-				candidatesIT[si]++;
-			}
 
-			if(ci == -1){
-				psi = si;
-				cmatched[si].clear();
-				si--;
-			}
-			else{
-				cmatched[si].insert(ci);
-				(*matchedcouples)++;
+            //MT_ISO
 
-				if(si == *nof_sn -1){
-					matchListener(printToConsole, matchCount, *nof_sn, map_state_to_node, solution);
+            if ((!matched[ci])
+                && (cmatched[si][ci] == false)
+                && nodeSubCheck(si, ci, map_state_to_node, r_out_adj_sizes, q_out_adj_sizes, r_in_adj_sizes,
+                                q_in_adj_sizes, r_nodes_attrs, r_offset_nodes_attr, q_nodes_attrs,q_offset_nodes_attr, *type_comparator)
+                &&
+                edgesSubCheck(si, ci, solution, matched, edges_sizes, flat_edges, flat_edges_indexes, r_out_adj_sizes,
+                              r_out_adj_list, r_offset_out_adj_list, *type_comparator)
+                    ) {
+                //printf("sono qui");
+                break;
+            } else {
+                ci = -1;
+            }
+
+            candidatesIT[si]++;
+        }
+
+        if (ci == -1) {
+            psi = si;
+            for (int i = 0; i < *r_nof_nodes; i++) {
+                cmatched[si][i] = false;
+            }
+            //cmatched[si].clear();
+            si--;
+        } else {
+            cmatched[si][ci] = true;
+
+            (*matchedcouples)++;
+
+            if (si == *nof_sn - 1) {
+                matchListener(printToConsole, matchCount, *nof_sn, map_state_to_node, solution);
 #ifdef FIRST_MATCH_ONLY
-					si = -1;
+                si = -1;
 #endif
-					psi = si;
-				}
-				else{
-					matched[solution[si]] = true;
-					sip1 = si+1;
-					if(parent_type[sip1] == PARENTTYPE_NULL){
-						candidates[sip1] = listAllRef;
-						candidatesSize[sip1] = *r_nof_nodes;
-					}
-					else{
-						if(parent_type[sip1] == PARENTTYPE_IN){
-							printf("sono dentro"); 
-							int arr_len = r_offset_in_adj_list[solution[parent_state[sip1]] + 1] - r_offset_in_adj_list[solution[parent_state[sip1]]]; 
-							int * arr = (int *)malloc(arr_len * sizeof(int)); 
-							//for(int i = 0;)
-							candidates[sip1] = r_in_adj_list[solution[parent_state[sip1]]];
-							candidatesSize[sip1] = r_in_adj_sizes[solution[parent_state[sip1]]];
-							printf("%d", arr_len == r_in_adj_sizes[solution[parent_state[sip1]]])
-						}
-						else{//(parent_type[sip1] == MAMA_PARENTTYPE::PARENTTYPE_OUT)
-							candidates[sip1] = r_out_adj_list[solution[parent_state[sip1]]];
-							candidatesSize[sip1] = r_out_adj_sizes[solution[parent_state[sip1]]];
-						}
-					}
-					candidatesIT[si +1] = -1;
+                psi = si;
+            } else {
+                matched[solution[si]] = true;
+                sip1 = si + 1;
+                if (parent_type[sip1] == 2) {
+                    candidates[sip1] = listAllRef;
+                    candidatesSize[sip1] = *r_nof_nodes;
+                } else {
+                    if (parent_type[sip1] == 0) {
+                        //printf("sono dentro");
+                        int r_start_in_adj_list = r_offset_in_adj_list[solution[parent_state[sip1]]];
+                        int r_end_in_adj_list = r_offset_in_adj_list[solution[parent_state[sip1]] + 1];
+                        int arr_len = r_end_in_adj_list - r_start_in_adj_list;
+                        int * arr_r_in_adj_list = (int *) malloc(arr_len * sizeof(int));
+                        int pos = 0;
+                        for(int i = r_start_in_adj_list; i < r_end_in_adj_list; ++i){
+                            arr_r_in_adj_list[pos] = r_in_adj_list[i];
+                            pos++;
+                        }
+                        candidates[sip1] = arr_r_in_adj_list;
+                        candidatesSize[sip1] = arr_len;
+                        printf("%d", arr_len == r_in_adj_sizes[solution[parent_state[sip1]]]);
+                    } else {//(parent_type[sip1] == MAMA_PARENTTYPE::PARENTTYPE_OUT)
+                        //printf("sono qui");
+                        int r_start_out_adj_list = r_offset_out_adj_list[solution[parent_state[sip1]]];
+                        int r_end_out_adj_list = r_offset_out_adj_list[solution[parent_state[sip1]] + 1];
+                        int arr_len = r_end_out_adj_list - r_start_out_adj_list;
+                        int * arr_r_out_adj_list = (int *) malloc(arr_len * sizeof(int));
+                        int pos = 0;
+                        for(int i = r_start_out_adj_list; i < r_end_out_adj_list; ++i){
+                            arr_r_out_adj_list[pos] = r_out_adj_list[i];
+                            pos++;
+                        }
+                        candidates[sip1] = arr_r_out_adj_list;
+                        candidatesSize[sip1] = arr_len;
+                    }
+                }
+                candidatesIT[si + 1] = -1;
 
-					psi = si;
-					si++;
-				}
-			}
-		}
-    
+                psi = si;
+                si++;
+            }
+        }
+    }
+
     // memory cleanup
     free(matched);
-    delete[] cmatched;
+    //delete[] cmatched;
     delete[] solution;
     delete[] candidatesSize;
     delete[] candidatesIT;
     delete[] candidates;
     delete[] listAllRef;
-	}
-	
+}
+
 
 #endif 

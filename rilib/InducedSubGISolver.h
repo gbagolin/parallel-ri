@@ -86,7 +86,7 @@ public:
 		int* map_node_to_state 			  = mama.map_node_to_state;			//indexed by node_id
 		int* map_state_to_node 			  = mama.map_state_to_node;			//indexed by state_id
 		int* parent_state 				    = mama.parent_state;			//indexed by state_id
-		MAMA_PARENTTYPE* parent_type 	= mama.parent_type;				//indexed by state id
+		int* parent_type 	= mama.parent_type;				//indexed by state id
 
 
 		int* listAllRef = new int[rgraph.nof_nodes];
@@ -168,12 +168,12 @@ public:
 				else{
 					matched[solution[si]] = true;
 					sip1 = si+1;
-					if(parent_type[sip1] == PARENTTYPE_NULL){
+					if(parent_type[sip1] == 2){
 						candidates[sip1] = listAllRef;
 						candidatesSize[sip1] = rgraph.nof_nodes;
 					}
 					else{
-						if(parent_type[sip1] == PARENTTYPE_IN){
+						if(parent_type[sip1] == 0){
 							candidates[sip1] = rgraph.in_adj_list[solution[parent_state[sip1]]];
 							candidatesSize[sip1] = rgraph.in_adj_sizes[solution[parent_state[sip1]]];
 						}
