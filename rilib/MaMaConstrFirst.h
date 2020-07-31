@@ -40,13 +40,14 @@ namespace rilib{
 
 class MaMaConstrFirst : public MatchingMachine{
 
+
 public:
 
 	MaMaConstrFirst(Graph& query) : MatchingMachine(query){
-
 	}
 
 	virtual void build(Graph& ssg){
+
 
 		enum NodeFlag {NS_CORE, NS_CNEIGH, NS_UNV};
 		NodeFlag* node_flags = new NodeFlag[nof_sn]; 						//indexed by node_id
@@ -54,7 +55,7 @@ public:
 		int* t_parent_node = (int*) calloc(nof_sn, sizeof(int));			//indexed by node_id
 		int* t_parent_type = new int[nof_sn];		//indexed by node id
 
-		int total_count = 0; 
+		int total_count = 0;
 
 		for(int i=0; i<nof_sn; i++){
 			node_flags[i] = NS_UNV;
@@ -267,7 +268,9 @@ public:
 			}
 		}
 
-		flat_edges = new MaMaEdge[total_count]; 
+		flat_edges = new MaMaEdge[total_count];
+		source = new int[total_count];
+		target = new int[total_count];
 		flat_edges_indexes = new int[nof_sn]; 
 		/*
 		for(int si = 0, c = 0; si < nof_sn; si++){
@@ -280,18 +283,36 @@ public:
 
 		}
 		*/
+		int length_string = 0;
 		for(int si = 0, int c = 0; si < nof_sn; si++){
 
 			flat_edges_indexes[si] = c; 
 
 			for(int j = 0; j < edges_sizes[si]; j++){
 				flat_edges[c + j].source = edges[si][j].source;
+				source[c + j] = edges[si][j].source;
 				flat_edges[c + j].target = edges[si][j].target;
+				target[c + j] = edges[si][j].target;
 				flat_edges[c + j].attr = edges[si][j].attr;
+                length_string += strlen((char *)edges[si][j].attr);
 			}
 
 			c += edges_sizes[si]; 
 		}
+
+		attr = new char[length_string + 1];
+		int count = 0;
+        for(int si = 0, int c = 0; si < nof_sn; si++){
+            for(int j = 0; j < edges_sizes[si]; j++){
+                strcat((char * )attr, (char *)flat_edges[c + j].attr);
+                offset_attr[c + j + 1] = offset_attr[c + j] + strlen((char *)flat_edges[c + j].attr);
+            }
+
+            c += edges_sizes[si];
+
+        }
+
+
 		/*
 		for(int si = 0, int c = 0; si < nof_sn; si++){
 			for(int j = 0; j < edges_sizes[si]; j++){

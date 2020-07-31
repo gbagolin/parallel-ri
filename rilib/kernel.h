@@ -62,32 +62,35 @@ nodeSubCheck(int si, int ci, int *map_state_to_node, int *r_out_adj_sizes, int *
 
 __host__ __device__
 
-bool edgesSubCheck(int si, int ci, int *solution, bool *matched, int *edges_sizes, MaMaEdge *m_flat_edges,
+bool edgesSubCheck(int si, int ci, int *solution, bool *matched, int *edges_sizes, int * source, int * target, void * attr, int * offset_attr,
                    int *m_flat_edges_indexes, int *r_out_adj_sizes, int *r_out_adj_list, int * r_offset_out_adj_list,
                    int comparatorType) {
-    int source, target;
+    int tmp_source, tmp_target;
     int ii;
     for (int me = 0; me < edges_sizes[si]; me++) {
         //printf("siamo qui dentro");
-        source = solution[m_flat_edges[m_flat_edges_indexes[si] + me].source];
-        target = solution[m_flat_edges[m_flat_edges_indexes[si] + me].target];
+        tmp_source = solution[source[m_flat_edges_indexes[si] + me]];
+        tmp_target = solution[target[m_flat_edges_indexes[si] + me]];
 
-        for (ii = 0; ii < r_out_adj_sizes[source]; ii++) {
-            int index = r_offset_out_adj_list[source] + ii;
-            if (r_out_adj_list[index] == target) {
+        for (ii = 0; ii < r_out_adj_sizes[tmp_source]; ii++) {
+            int index = r_offset_out_adj_list[tmp_source] + ii;
+            if (r_out_adj_list[index] == tmp_target) {
 //					if(! edgeComparator.compare(rgraph.out_adj_attrs[source][ii],  mama.edges[si][me].attr)){
 //						return false;
 //					}
 //					else{
 //						break;
 //					}
+                int start = offset_attr[m_flat_edges_indexes[si] + me];
+                int end = offset_attr[m_flat_edges_indexes[si] + me + 1];
+                void * str_attr = getSubString(attr,start,end);
                 if (edgeComparator(comparatorType, NULL,
-                                   m_flat_edges[m_flat_edges_indexes[si] + me].attr)) {
+                                   str_attr)) {
                     break;
                 }
             }
         }
-        if (ii >= r_out_adj_sizes[source]) {
+        if (ii >= r_out_adj_sizes[tmp_source]) {
             return false;
         }
     }
@@ -104,8 +107,11 @@ void subsolver(
         //Mama
         int *nof_sn,
         int *edges_sizes,
-        MaMaEdge *flat_edges,
         int *flat_edges_indexes,
+        int *source,
+        int *target,
+        void *attr,
+        int *offset_attr,
         int *map_node_to_state,
         int *map_state_to_node,
         int *parent_state,
@@ -202,7 +208,7 @@ void subsolver(
                 && nodeSubCheck(si, ci, map_state_to_node, r_out_adj_sizes, q_out_adj_sizes, r_in_adj_sizes,
                                 q_in_adj_sizes, r_nodes_attrs, r_offset_nodes_attr, q_nodes_attrs,q_offset_nodes_attr, *type_comparator)
                 &&
-                edgesSubCheck(si, ci, solution, matched, edges_sizes, flat_edges, flat_edges_indexes, r_out_adj_sizes,
+                edgesSubCheck(si, ci, solution, matched, edges_sizes, source, target, attr, offset_attr, flat_edges_indexes, r_out_adj_sizes,
                               r_out_adj_list, r_offset_out_adj_list, *type_comparator)
                     ) {
                 //printf("sono qui");

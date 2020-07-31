@@ -69,7 +69,11 @@ public:
 	int* o_edges_sizes;				//indexed by state_id
 	int* i_edges_sizes;				//indexed by state_id
 	MaMaEdge** edges;				//indexed by state_id, map on states  (0,1) = (state0, state1)
-	MaMaEdge * flat_edges; 
+	MaMaEdge * flat_edges;
+	int * source;
+	int * target;
+	void * attr;
+	int * offset_attr;
 	int * flat_edges_indexes; 
 
 	int* map_node_to_state;			//indexed by node_id

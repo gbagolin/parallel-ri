@@ -75,10 +75,6 @@ void query_malloc(Graph &query) {
 void mama_malloc(MatchingMachine &mama) {
 
     MaMaEdge *d_flat_edges;
-    int * source;
-    int * target;
-    void** attr;
-
 
 
     cudaMalloc(&d_nof_sn, sizeof(int));

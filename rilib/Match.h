@@ -159,7 +159,6 @@ namespace rilib {
                 */
 
 
-
                 subsolver(
                         //printToConsole
                         printToConsole,
@@ -169,8 +168,11 @@ namespace rilib {
                         //Mama
                         &matchingMachine.nof_sn,
                         matchingMachine.edges_sizes,
-                        matchingMachine.flat_edges,
                         matchingMachine.flat_edges_indexes,
+                        matchingMachine.source,
+                        matchingMachine.target,
+                        matchingMachine.attr,
+                        matchingMachine.offset_attr,
                         matchingMachine.map_node_to_state,
                         matchingMachine.map_state_to_node,
                         matchingMachine.parent_state,
