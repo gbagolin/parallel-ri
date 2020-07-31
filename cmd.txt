@@ -1,0 +1,3 @@
+./ri36 mono gfu C:\Users\giova\Desktop\RI-Datasets\AIDS\AIDS40000\queries\query4_000.txt C:\Users\giova\Desktop\RI-Datasets\AIDS\AIDS40000\queries\query4_000.txt
+./ri36 mono gfu C:\Users\giova\Desktop\RI-Datasets\AIDS\AIDS40000\queries\query16_000.txt C:\Users\giova\Desktop\RI-Datasets\AIDS\AIDS40000\queries\query16_000.txt
+./ri36 mono gfu C:\Users\giova\Desktop\RI-Datasets\AIDS\AIDS40000\queries\query16_000.txt C:\Users\giova\Desktop\RI-Datasets\AIDS\AIDS40000\queries\query4_000.txt
