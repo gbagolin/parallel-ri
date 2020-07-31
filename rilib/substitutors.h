@@ -77,11 +77,12 @@ void * getSubString(void * nodes_attrs,int start, int end){
     }
 __device__
 void matchListener(bool* printToConsole,long * matchcount, int n, int* qIDs, int* rIDs){
+
         if(*printToConsole){
             (*matchcount)++;
             printf("{");
             for(int i=0; i<n; i++){
-                printf("( %d, %d )", qIDs[i] , rIDs[i]);
+                printf("(%d,%d)", qIDs[i] , rIDs[i]);
             }
             printf("}\n");
         }

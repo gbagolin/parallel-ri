@@ -51,7 +51,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "flatter.h"
 //#include "mallocUtility.h"
 
-//#define PRINT_MATCHES
+#define PRINT_MATCHES
 //#define CSV_FORMAT
 
 
@@ -224,7 +224,7 @@ int match(
 
 	FILE *fd = open_file(referencefile.c_str(), filetype);
 	if(fd != NULL){
-		bool printToConsole = false; 
+		bool printToConsole = false;
 		long matchCount = 0; 
 #ifdef PRINT_MATCHES
 		//to print found matches on screen
@@ -252,7 +252,7 @@ int match(
            // reference_malloc(*rrg);
 
 			if(rreaded){
-					
+
 					//run the matching
 					match_s=start_time();
 					match(	*rrg,
@@ -305,10 +305,10 @@ int match(
 	std::cout<<"matching time: "<<match_t<<"\n";
 	std::cout<<"number of found matches: "<<matchcount<<"\n";
 	std::cout<<"search space size: "<<matchedcouples<<"\n";
-	cout << "Pattern Graph load time " << load_t_q << endl; 
+	cout << "Pattern Graph load time " << load_t_q << endl;
+    cout << "Target Graphs load time " << load_t<< endl;
 	cout << "mama time: " << make_mama_t << endl;
-	cout << "Target Graphs load time " << load_t<< endl; 
-	cout << "Matching time: " << match_t << endl; 
+
 #endif
 
 //	delete mama;

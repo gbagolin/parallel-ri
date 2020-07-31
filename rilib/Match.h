@@ -141,7 +141,7 @@ namespace rilib {
                 long *d_matchedcouples;
 
                 cudaMalloc(&d_printToConsole, sizeof(bool));
-                cudaMemcpy(d_printToConsole, printToConsole, sizeof(int),
+                cudaMemcpy(d_printToConsole, printToConsole, sizeof(bool),
                            cudaMemcpyHostToDevice);
 
                 cudaMalloc(&d_matchCount, sizeof(long));
@@ -358,12 +358,12 @@ namespace rilib {
                         d_q_flatten_nodes_attr,
                         d_q_offset_nodes_attr);
 
-                /*
+
                 cudaMemcpy(steps, d_steps, sizeof(long), cudaMemcpyDeviceToHost);
                 cudaMemcpy(triedcouples, d_triedcouples, sizeof(long), cudaMemcpyDeviceToHost);
                 cudaMemcpy(matchedcouples, d_matchedcouples, sizeof(long), cudaMemcpyDeviceToHost);
                 cudaMemcpy(matchCount, d_matchCount, sizeof(long), cudaMemcpyDeviceToHost);
-                 */
+
                 cudaDeviceReset();
                 //solver3->solve();
                 /*

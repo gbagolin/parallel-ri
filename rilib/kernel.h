@@ -47,8 +47,12 @@ nodeSubCheck(int si, int ci, int *map_state_to_node, int *r_out_adj_sizes, int *
              int *q_in_adj_sizes, void *r_nodes_attrs, int *r_offset_nodes_attr, void *q_nodes_attrs,
              int *q_offset_nodes_attr, int comparatorType) {
 
+    //printf("node_sub_check\n");
+
     if (r_out_adj_sizes[ci] >= q_out_adj_sizes[map_state_to_node[si]]
         && r_in_adj_sizes[ci] >= q_in_adj_sizes[map_state_to_node[si]]) {
+
+       // printf("IF node_sub_check\n");
 
         int r_start = r_offset_nodes_attr[ci];
         int r_end = r_offset_nodes_attr[ci + 1];
@@ -56,6 +60,9 @@ nodeSubCheck(int si, int ci, int *map_state_to_node, int *r_out_adj_sizes, int *
         int q_end = q_offset_nodes_attr[map_state_to_node[si] + 1];
         void *q_str_attr = getSubString(q_nodes_attrs, q_start, q_end);
         void *r_str_attr = getSubString(r_nodes_attrs, r_start, r_end);
+       // printf("END IF node_sub_check\n");
+       // printf("%s ", q_str_attr);
+     //   printf("%s\n", r_str_attr);
         return nodeComparator(comparatorType, r_str_attr, q_str_attr);
     }
     return false;
@@ -143,34 +150,8 @@ void subsolver(
         int *q_offset_nodes_attr
 
 ) {
-    printf("sono il kernel");
-    /*
-    printf("Kernel: printToConsole %d\n", *printToConsole);
-    printf("Kernel: matchCount %d\n", *matchCount);
-    printf("Kernel: type_comparator %d\n", *type_comparator);
-    printf("Kernel: steps %d\n", *steps);
-    printf("Kernel: triedcouples %d\n", *triedcouples);
-    printf("Kernel: matchedcouples %d\n", *matchedcouples);
 
 
-    printf("Kernel: nof_sn %d\n", *nof_sn);
-
-    printf("Kernel: edges_sizes %d\n", edges_sizes[1]);
-
-    printf("Kernel: source %d\n", source[2]);
-
-    printf("Kernel: r_nof_nodes %d\n", r_nof_nodes[0]);
-
-    printf("Kernel: q_nof_nodes %d\n", q_nof_nodes[0]);
-
-    */
-
-    //printf("ciaoooo\n");
-
-    //printf("qui ci entro");
-
-    //printf("%s\n", (char *)(attr));
-    
     int ii;
     int *listAllRef = new int[*r_nof_nodes];
     for (
@@ -195,7 +176,7 @@ void subsolver(
     }
 
 
-    bool cmatched[10][10];
+    bool cmatched[10][1000];
 
 //printf("%i, %i, %i\n", *nof_sn, *r_nof_nodes, *q_nof_nodes);
 
@@ -214,10 +195,12 @@ void subsolver(
 
     while (si != -1) {
 
+      //  printf("sono dentro il while\n");
 
 //steps++;
 
         if (psi >= si) {
+          //  printf("psi >= si\n");
             matched[solution[si]] = false;
         }
 
@@ -225,37 +208,20 @@ void subsolver(
         candidatesIT[si]++;
 
         while (candidatesIT[si] < candidatesSize[si]) {
+         //   printf("candidatesIT[si] < candidatesSize[si]\n");
             //printf("ok");
 //triedcouples++;
 
             ci = candidates[si][candidatesIT[si]];
             solution[si] = ci;
 
+        //    printf("solution[si] = ci\n");
+
 //				std::cout<<"[ "<<map_state_to_node[si]<<" , "<<ci<<" ]\n";
 //				if(matched[ci]) std::cout<<"fails on alldiff\n";
 //				if(!nodeCheck(si,ci, map_state_to_node)) std::cout<<"fails on node label\n";
 //				if(!(edgesCheck(si, ci, solution, matched))) std::cout<<"fails on edges \n";
 
-//MT_ISO
-
-            /*
-            if (!matched[ci]) {
-
-                if (cmatched[si][ci] == false) {
-
-                    if (nodeSubCheck(si, ci, map_state_to_node, r_out_adj_sizes, q_out_adj_sizes, r_in_adj_sizes,
-                                     q_in_adj_sizes, r_nodes_attrs, r_offset_nodes_attr, q_nodes_attrs,
-                                     q_offset_nodes_attr,
-                                     *type_comparator
-                    )) {
-                        printf("terzo if");
-                    }
-
-                }
-
-            }
-
-            */
 
             if ((!matched[ci])
                 && (cmatched[si][ci] == false)
@@ -270,9 +236,10 @@ void subsolver(
                               r_out_adj_list, r_offset_out_adj_list, *type_comparator
                 )
                     ) {
-//printf("sono qui");
+             //   printf("sono qui\n");
                 break;
             } else {
+             //   printf("ci\n");
                 ci = -1;
             }
 
@@ -281,22 +248,19 @@ void subsolver(
         }
 
         if (ci == -1) {
+          //  printf("ci=-1\n");
             psi = si;
-            for (
-                    int i = 0;
-                    i < *
-                            r_nof_nodes;
-                    i++) {
+            for (int i = 0; i < 200; i++) {
                 cmatched[si][i] = false;
             }
-//cmatched[si].clear();
             si--;
         } else {
+         //   printf("ci!=-1\n");
             cmatched[si][ci] = true;
-
             (*matchedcouples)++;
 
             if (si == *nof_sn - 1) {
+               // printf("dovrei fare questo\n");
                 matchListener(printToConsole, matchCount, *nof_sn, map_state_to_node, solution
                 );
 #ifdef FIRST_MATCH_ONLY
@@ -304,9 +268,11 @@ void subsolver(
 #endif
                 psi = si;
             } else {
+            //    printf("si != nof_sn - 1\n");
                 matched[solution[si]] = true;
                 sip1 = si + 1;
                 if (parent_type[sip1] == 2) {
+              //      printf("parent_type == 2\n");
                     candidates[sip1] =
                             listAllRef;
                     candidatesSize[sip1] = *
@@ -330,9 +296,9 @@ void subsolver(
                                 arr_r_in_adj_list;
                         candidatesSize[sip1] =
                                 arr_len;
-                       // printf("%d", arr_len == r_in_adj_sizes[solution[parent_state[sip1]]]);
+                        // printf("%d", arr_len == r_in_adj_sizes[solution[parent_state[sip1]]]);
                     } else {//(parent_type[sip1] == MAMA_PARENTTYPE::PARENTTYPE_OUT)
-                        printf("sono qui");
+                    //    printf("sono qui dentro\n");
                         int r_start_out_adj_list = r_offset_out_adj_list[solution[parent_state[sip1]]];
                         int r_end_out_adj_list = r_offset_out_adj_list[solution[parent_state[sip1]] + 1];
                         int arr_len = r_end_out_adj_list - r_start_out_adj_list;
@@ -349,6 +315,7 @@ void subsolver(
                                 arr_r_out_adj_list;
                         candidatesSize[sip1] =
                                 arr_len;
+                     //   printf("arrivo alla fine dell'else\n");
                     }
                 }
                 candidatesIT[si + 1] = -1;
