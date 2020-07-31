@@ -196,8 +196,8 @@ int match(
 	Graph *query = new Graph();
 	rret = read_graph(queryfile.c_str(), query, filetype);
 	load_t_q+=end_time(load_s_q);
-
-	//cudaMalloc query
+   // printf("ho creato il grafo\n");
+    //cudaMalloc query
     query_malloc(*query);
 
 	if(rret !=0){
@@ -206,8 +206,10 @@ int match(
 
 	make_mama_s=start_time();
 	MaMaConstrFirst* mama = new MaMaConstrFirst(*query);
+   // printf("ho creato l'oggetto mama\n");
 	mama->build(*query);
 	make_mama_t+=end_time(make_mama_s);
+
     flatterGraph(query);
 
     mama_malloc(*mama);

@@ -41,30 +41,32 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <set>
 
 
-__host__ __device__
-
+__device__
 bool
 nodeSubCheck(int si, int ci, int *map_state_to_node, int *r_out_adj_sizes, int *q_out_adj_sizes, int *r_in_adj_sizes,
-             int *q_in_adj_sizes, void *r_nodes_attrs, int * r_offset_nodes_attr, void *q_nodes_attrs, int * q_offset_nodes_attr, int comparatorType) {
+             int *q_in_adj_sizes, void *r_nodes_attrs, int *r_offset_nodes_attr, void *q_nodes_attrs,
+             int *q_offset_nodes_attr, int comparatorType) {
+
     if (r_out_adj_sizes[ci] >= q_out_adj_sizes[map_state_to_node[si]]
         && r_in_adj_sizes[ci] >= q_in_adj_sizes[map_state_to_node[si]]) {
 
         int r_start = r_offset_nodes_attr[ci];
-        int r_end = r_offset_nodes_attr[ci+1];
+        int r_end = r_offset_nodes_attr[ci + 1];
         int q_start = q_offset_nodes_attr[map_state_to_node[si]];
         int q_end = q_offset_nodes_attr[map_state_to_node[si] + 1];
-        void * q_str_attr = getSubString(q_nodes_attrs,q_start,q_end);
-        void * r_str_attr = getSubString(r_nodes_attrs,r_start,r_end);
+        void *q_str_attr = getSubString(q_nodes_attrs, q_start, q_end);
+        void *r_str_attr = getSubString(r_nodes_attrs, r_start, r_end);
         return nodeComparator(comparatorType, r_str_attr, q_str_attr);
     }
     return false;
 }
 
-__host__ __device__
-
-bool edgesSubCheck(int si, int ci, int *solution, bool *matched, int *edges_sizes, int * source, int * target, void * attr, int * offset_attr,
-                   int *m_flat_edges_indexes, int *r_out_adj_sizes, int *r_out_adj_list, int * r_offset_out_adj_list,
+__device__
+bool edgesSubCheck(int si, int ci, int *solution, bool *matched, int *edges_sizes, int *source, int *target, void *attr,
+                   int *offset_attr,
+                   int *m_flat_edges_indexes, int *r_out_adj_sizes, int *r_out_adj_list, int *r_offset_out_adj_list,
                    int comparatorType) {
+
     int tmp_source, tmp_target;
     int ii;
     for (int me = 0; me < edges_sizes[si]; me++) {
@@ -83,7 +85,7 @@ bool edgesSubCheck(int si, int ci, int *solution, bool *matched, int *edges_size
 //					}
                 int start = offset_attr[m_flat_edges_indexes[si] + me];
                 int end = offset_attr[m_flat_edges_indexes[si] + me + 1];
-                void * str_attr = getSubString(attr,start,end);
+                void *str_attr = getSubString(attr, start, end);
                 if (edgeComparator(comparatorType, NULL,
                                    str_attr)) {
                     break;
@@ -97,9 +99,10 @@ bool edgesSubCheck(int si, int ci, int *solution, bool *matched, int *edges_size
     return true;
 }
 
-
+__global__
 void subsolver(
         //printToConsole
+
         bool *printToConsole,
         long *matchCount,
         //typeComparator
@@ -141,38 +144,50 @@ void subsolver(
         long *steps,
         long *triedcouples,
         long *matchedcouples
-) {
 
+
+) {
+    printf("Kernel: nof_sn %d\n", *nof_sn);
+
+    //printf("ciaoooo\n");
+    /*
+    //printf("qui ci entro");
+
+    //printf("%s\n", (char *)(attr));
+    
     int ii;
     int *listAllRef = new int[*r_nof_nodes];
-    for (ii = 0; ii < *r_nof_nodes; ii++)
-        listAllRef[ii] = ii;
+    for (
+            ii = 0;
+            ii < *
+                    r_nof_nodes;
+            ii++)
+        listAllRef[ii] =
+                ii;
 
     int **candidates = new int *[*nof_sn];                            //indexed by state_id
     int *candidatesIT = new int[*nof_sn];                            //indexed by state_id
     int *candidatesSize = new int[*nof_sn];                            //indexed by state_id
     int *solution = new int[*nof_sn];
-    //indexed by state_id
-    for (ii = 0; ii < *nof_sn; ii++) {
+//indexed by state_id
+    for (
+            ii = 0;
+            ii < *
+                    nof_sn;
+            ii++) {
         solution[ii] = -1;
     }
 
-    /*
-    //std::set<int> *cmatched = new std::set<int>[*nof_sn];
-    bool ** cmatched = (bool **)malloc(*nof_sn * sizeof(bool));
-    for (int i = 0; i < *nof_sn; ++i) {
-        cmatched[i] = (bool *)malloc(*r_nof_nodes * sizeof(bool));
-    }
 
-    */
     bool cmatched[1000][1000];
 
-    //printf("%i, %i, %i\n", *nof_sn, *r_nof_nodes, *q_nof_nodes);
+//printf("%i, %i, %i\n", *nof_sn, *r_nof_nodes, *q_nof_nodes);
 
-    bool *matched = (bool *) calloc(*r_nof_nodes, sizeof(bool));        //indexed by node_id
+    bool matched[1000];
 
     candidates[0] = listAllRef;
-    candidatesSize[0] = *r_nof_nodes;
+    candidatesSize[0] = *
+            r_nof_nodes;
     candidatesIT[0] = -1;
 
     int psi = -1;
@@ -180,9 +195,11 @@ void subsolver(
     int ci = -1;
     int sip1;
 
+
     while (si != -1) {
 
-        //steps++;
+
+//steps++;
 
         if (psi >= si) {
             matched[solution[si]] = false;
@@ -190,42 +207,70 @@ void subsolver(
 
         ci = -1;
         candidatesIT[si]++;
+
         while (candidatesIT[si] < candidatesSize[si]) {
-            //triedcouples++;
+//triedcouples++;
 
             ci = candidates[si][candidatesIT[si]];
-            solution[si] = ci;
+            solution[si] =
+                    ci;
 
 //				std::cout<<"[ "<<map_state_to_node[si]<<" , "<<ci<<" ]\n";
 //				if(matched[ci]) std::cout<<"fails on alldiff\n";
 //				if(!nodeCheck(si,ci, map_state_to_node)) std::cout<<"fails on node label\n";
 //				if(!(edgesCheck(si, ci, solution, matched))) std::cout<<"fails on edges \n";
 
-            //MT_ISO
+//MT_ISO
+            if (!matched[ci]) {
+
+                if (cmatched[si][ci] == false) {
+
+
+                    if (nodeSubCheck(si, ci, map_state_to_node, r_out_adj_sizes, q_out_adj_sizes, r_in_adj_sizes,
+                                     q_in_adj_sizes, r_nodes_attrs, r_offset_nodes_attr, q_nodes_attrs,
+                                     q_offset_nodes_attr,
+                                     *type_comparator
+                    )) {
+                        printf("terzo if");
+                    }
+
+                }
+
+            }
 
             if ((!matched[ci])
                 && (cmatched[si][ci] == false)
-                && nodeSubCheck(si, ci, map_state_to_node, r_out_adj_sizes, q_out_adj_sizes, r_in_adj_sizes,
-                                q_in_adj_sizes, r_nodes_attrs, r_offset_nodes_attr, q_nodes_attrs,q_offset_nodes_attr, *type_comparator)
                 &&
-                edgesSubCheck(si, ci, solution, matched, edges_sizes, source, target, attr, offset_attr, flat_edges_indexes, r_out_adj_sizes,
-                              r_out_adj_list, r_offset_out_adj_list, *type_comparator)
+                nodeSubCheck(si, ci, map_state_to_node, r_out_adj_sizes, q_out_adj_sizes, r_in_adj_sizes,
+                             q_in_adj_sizes, r_nodes_attrs, r_offset_nodes_attr, q_nodes_attrs, q_offset_nodes_attr,
+                             *type_comparator
+                )
+                &&
+                edgesSubCheck(si, ci, solution, matched, edges_sizes, source, target, attr, offset_attr,
+                              flat_edges_indexes, r_out_adj_sizes,
+                              r_out_adj_list, r_offset_out_adj_list, *type_comparator
+                )
                     ) {
-                //printf("sono qui");
+//printf("sono qui");
                 break;
             } else {
                 ci = -1;
             }
+
 
             candidatesIT[si]++;
         }
 
         if (ci == -1) {
             psi = si;
-            for (int i = 0; i < *r_nof_nodes; i++) {
+            for (
+                    int i = 0;
+                    i < *
+                            r_nof_nodes;
+                    i++) {
                 cmatched[si][i] = false;
             }
-            //cmatched[si].clear();
+//cmatched[si].clear();
             si--;
         } else {
             cmatched[si][ci] = true;
@@ -233,7 +278,8 @@ void subsolver(
             (*matchedcouples)++;
 
             if (si == *nof_sn - 1) {
-                matchListener(printToConsole, matchCount, *nof_sn, map_state_to_node, solution);
+                matchListener(printToConsole, matchCount, *nof_sn, map_state_to_node, solution
+                );
 #ifdef FIRST_MATCH_ONLY
                 si = -1;
 #endif
@@ -242,36 +288,48 @@ void subsolver(
                 matched[solution[si]] = true;
                 sip1 = si + 1;
                 if (parent_type[sip1] == 2) {
-                    candidates[sip1] = listAllRef;
-                    candidatesSize[sip1] = *r_nof_nodes;
+                    candidates[sip1] =
+                            listAllRef;
+                    candidatesSize[sip1] = *
+                            r_nof_nodes;
                 } else {
                     if (parent_type[sip1] == 0) {
-                        //printf("sono dentro");
+
                         int r_start_in_adj_list = r_offset_in_adj_list[solution[parent_state[sip1]]];
                         int r_end_in_adj_list = r_offset_in_adj_list[solution[parent_state[sip1]] + 1];
                         int arr_len = r_end_in_adj_list - r_start_in_adj_list;
-                        int * arr_r_in_adj_list = (int *) malloc(arr_len * sizeof(int));
+                        int *arr_r_in_adj_list = (int *) malloc(arr_len * sizeof(int));
                         int pos = 0;
-                        for(int i = r_start_in_adj_list; i < r_end_in_adj_list; ++i){
+                        for (
+                                int i = r_start_in_adj_list;
+                                i < r_end_in_adj_list;
+                                ++i) {
                             arr_r_in_adj_list[pos] = r_in_adj_list[i];
                             pos++;
                         }
-                        candidates[sip1] = arr_r_in_adj_list;
-                        candidatesSize[sip1] = arr_len;
-                        printf("%d", arr_len == r_in_adj_sizes[solution[parent_state[sip1]]]);
+                        candidates[sip1] =
+                                arr_r_in_adj_list;
+                        candidatesSize[sip1] =
+                                arr_len;
+                       // printf("%d", arr_len == r_in_adj_sizes[solution[parent_state[sip1]]]);
                     } else {//(parent_type[sip1] == MAMA_PARENTTYPE::PARENTTYPE_OUT)
-                        //printf("sono qui");
+
                         int r_start_out_adj_list = r_offset_out_adj_list[solution[parent_state[sip1]]];
                         int r_end_out_adj_list = r_offset_out_adj_list[solution[parent_state[sip1]] + 1];
                         int arr_len = r_end_out_adj_list - r_start_out_adj_list;
-                        int * arr_r_out_adj_list = (int *) malloc(arr_len * sizeof(int));
+                        int *arr_r_out_adj_list = (int *) malloc(arr_len * sizeof(int));
                         int pos = 0;
-                        for(int i = r_start_out_adj_list; i < r_end_out_adj_list; ++i){
+                        for (
+                                int i = r_start_out_adj_list;
+                                i < r_end_out_adj_list;
+                                ++i) {
                             arr_r_out_adj_list[pos] = r_out_adj_list[i];
                             pos++;
                         }
-                        candidates[sip1] = arr_r_out_adj_list;
-                        candidatesSize[sip1] = arr_len;
+                        candidates[sip1] =
+                                arr_r_out_adj_list;
+                        candidatesSize[sip1] =
+                                arr_len;
                     }
                 }
                 candidatesIT[si + 1] = -1;
@@ -282,14 +340,21 @@ void subsolver(
         }
     }
 
-    // memory cleanup
+// memory cleanup
     free(matched);
-    //delete[] cmatched;
-    delete[] solution;
-    delete[] candidatesSize;
-    delete[] candidatesIT;
-    delete[] candidates;
-    delete[] listAllRef;
+//delete[] cmatched;
+    delete[]
+            solution;
+    delete[]
+            candidatesSize;
+    delete[]
+            candidatesIT;
+    delete[]
+            candidates;
+    delete[]
+            listAllRef;
+    */
+
 }
 
 

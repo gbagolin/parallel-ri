@@ -40,45 +40,25 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "InducedSubGISolver.h"
 #include "kernel.h"
 #include "flatter.h"
+#include "mallocUtility.h"
 
 namespace rilib {
 
-    int *d_r_nof_nodes;
-    int *d_r_flatten_in_adj_list;
-    int *d_r_offset_in_adj_list;
-    int *d_r_in_adj_sizes;
-    int *d_r_flatten_out_adj_list;
-    int *d_r_offset_out_adj_list;
-    int *d_r_out_adj_sizes;
-    void *d_r_flatten_nodes_attr;
-    int *d_r_offset_nodes_attr;
-    void *d_r_out_adj_attrs = NULL;
-
-    int *d_q_nof_nodes;
-    int *d_q_flatten_in_adj_list;
-    int *d_q_offset_in_adj_list;
-    int *d_q_in_adj_sizes;
-    int *d_q_flatten_out_adj_list;
-    int *d_q_offset_out_adj_list;
-    int *d_q_out_adj_sizes;
-    void *d_q_flatten_nodes_attr;
-    int *d_q_offset_nodes_attr;
-
-    int *d_nof_sn;
-    int *d_edges_sizes;
-    MaMaEdge * d_flat_edges;
-    int *d_flat_edges_indexes;
-    int *d_map_node_to_state;
-    int *d_map_state_to_node;
-    int *d_parent_state;
-    int *d_parent_type;
-
     using namespace rilib;
 
+
+    void test(int * arr, int length, int count){
+        printf("Case #%d: ",count);
+        for (int i = 0; i < length; ++i) {
+            printf("%d ", arr[i]);
+        }
+        printf("\n");
+    }
     enum MATCH_TYPE {
         MT_ISO, MT_INDSUB, MT_MONO
     };
 
+    int count = 0;
 
     void match(
             Graph &reference,
@@ -149,34 +129,27 @@ namespace rilib {
                 break;
             case MT_MONO:
                 flatterGraph(&reference);
-                //printf("%d\n",reference.length_nodes_attrs);
-                //SubGISolver* solver3;
-                //solver3 = new SubGISolver(matchingMachine, reference, query, nodeComparator, edgeComparator, matchListener,2);
-                /*
-                long steps;
-                long triedcouples;
-                long matchedcouples;
-                */
 
+                in_out_malloc(printToConsole, matchCount, &comparatorType, steps, triedcouples, matchedcouples);
+                int count = 0;
+                test(&matchingMachine.nof_sn, 1,count++);
+                int prova = 10;
+                cudaMemcpy(d_nof_sn, &prova, sizeof(int), cudaMemcpyHostToDevice);
 
-                subsolver(
-                        //printToConsole
-                        printToConsole,
-                        matchCount,
-                        //typeComparator
+                subsolver<<<1, 1>>>(d_printToConsole, d_matchCount,
                         &comparatorType,
                         //Mama
-                        &matchingMachine.nof_sn,
-                        matchingMachine.edges_sizes,
-                        matchingMachine.flat_edges_indexes,
-                        matchingMachine.source,
-                        matchingMachine.target,
-                        matchingMachine.attr,
-                        matchingMachine.offset_attr,
-                        matchingMachine.map_node_to_state,
-                        matchingMachine.map_state_to_node,
-                        matchingMachine.parent_state,
-                        matchingMachine.parent_type,
+                        d_nof_sn,
+                        d_edges_sizes,
+                        d_flat_edges_indexes,
+                        d_source,
+                        d_target,
+                        d_attr,
+                        d_offset_attr,
+                        d_map_node_to_state,
+                        d_map_state_to_node,
+                        d_parent_state,
+                        d_parent_type,
                         //rgraph
                         d_r_nof_nodes,
                         d_r_flatten_in_adj_list,
@@ -198,10 +171,15 @@ namespace rilib {
                         d_q_out_adj_sizes,
                         d_q_flatten_nodes_attr,
                         d_q_offset_nodes_attr,
-                        steps,
-                        triedcouples,
-                        matchedcouples
-                );
+                        d_steps,
+                        d_triedcouples,
+                        d_matchedcouples);
+
+                cudaMemcpy(steps, d_steps, sizeof(long), cudaMemcpyDeviceToHost);
+                cudaMemcpy(triedcouples, d_triedcouples, sizeof(long), cudaMemcpyDeviceToHost);
+                cudaMemcpy(matchedcouples, d_matchedcouples, sizeof(long), cudaMemcpyDeviceToHost);
+                cudaMemcpy(matchCount, d_matchCount, sizeof(long), cudaMemcpyDeviceToHost);
+                cudaDeviceReset();
                 //solver3->solve();
                 /*
                     steps = solver3->steps;

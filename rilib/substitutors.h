@@ -8,7 +8,7 @@
 * @param end
 * @return
 */
-__host__ __device__
+__device__
 void * getSubString(void * nodes_attrs,int start, int end){
     int len = end - start + 1;
     char * sub_string = (char *)malloc(len*sizeof(char));
@@ -20,7 +20,7 @@ void * getSubString(void * nodes_attrs,int start, int end){
     return (void*)sub_string;
 }
 
-    __host__ __device__     
+    __device__
     int strcmp (const char *p1, const char *p2)
     {
     const unsigned char *s1 = (const unsigned char *) p1;
@@ -37,7 +37,7 @@ void * getSubString(void * nodes_attrs,int start, int end){
     return c1 - c2;
     }
 
-    __host__ __device__ 
+    __device__
     bool nodeComparator(int comparatorType, void * attr1, void * attr2){
         char* a=(char*)attr1;
         char* b=(char*)attr2;
@@ -56,7 +56,7 @@ void * getSubString(void * nodes_attrs,int start, int end){
             break;
         }
     }
-    __host__ __device__ 
+    __device__
     bool edgeComparator(int comparatorType, void* attr1, void* attr2){
         char* a=(char*)attr1;
         char* b=(char*)attr2;
@@ -75,15 +75,15 @@ void * getSubString(void * nodes_attrs,int start, int end){
             break;
         }
     }
-
+__device__
 void matchListener(bool* printToConsole,long * matchcount, int n, int* qIDs, int* rIDs){
         if(*printToConsole){
             (*matchcount)++;
-            std::cout<< "{";
+            printf("{");
             for(int i=0; i<n; i++){
-                std::cout<< "("<< qIDs[i] <<","<< rIDs[i] <<")";
+                printf("( %d, %d )", qIDs[i] , rIDs[i]);
             }
-            std::cout<< "}\n";
+            printf("}\n");
         }
         else{
             (*matchcount)++; 

@@ -1,6 +1,49 @@
 #ifndef MALLOCUTILITY_H_
 #define MALLOCUTILITY_H_
 
+bool *d_printToConsole;
+long *d_matchCount;
+//typeComparator
+int *d_comparatorType;
+
+
+int *d_r_nof_nodes;
+int *d_r_flatten_in_adj_list;
+int *d_r_offset_in_adj_list;
+int *d_r_in_adj_sizes;
+int *d_r_flatten_out_adj_list;
+int *d_r_offset_out_adj_list;
+int *d_r_out_adj_sizes;
+void *d_r_flatten_nodes_attr;
+int *d_r_offset_nodes_attr;
+void *d_r_out_adj_attrs = NULL;
+
+int *d_q_nof_nodes;
+int *d_q_flatten_in_adj_list;
+int *d_q_offset_in_adj_list;
+int *d_q_in_adj_sizes;
+int *d_q_flatten_out_adj_list;
+int *d_q_offset_out_adj_list;
+int *d_q_out_adj_sizes;
+void *d_q_flatten_nodes_attr;
+int *d_q_offset_nodes_attr;
+
+int *d_nof_sn;
+int *d_edges_sizes;
+int *d_source;
+int *d_target;
+void *d_attr;
+int *d_offset_attr;
+int *d_flat_edges_indexes;
+int *d_map_node_to_state;
+int *d_map_state_to_node;
+int *d_parent_state;
+int *d_parent_type;
+
+long *d_steps;
+long *d_triedcouples;
+long *d_matchedcouples;
+
 
 void reference_malloc(Graph &reference) {
     cudaMalloc(&d_r_nof_nodes, sizeof(int) * 1);
@@ -74,7 +117,7 @@ void query_malloc(Graph &query) {
 
 void mama_malloc(MatchingMachine &mama) {
 
-    MaMaEdge *d_flat_edges;
+    //MaMaEdge *d_flat_edges;
 
 
     cudaMalloc(&d_nof_sn, sizeof(int));
@@ -85,28 +128,25 @@ void mama_malloc(MatchingMachine &mama) {
     cudaMemcpy(d_edges_sizes, mama.edges_sizes, sizeof(int) * mama.nof_sn,
                cudaMemcpyHostToDevice);
 
-    /*
-    cudaMalloc((void **)d_flat_edges, sizeof(MaMaEdge) * mama.nof_sn);
-    cudaMemcpy(d_flat_edges, mama.flat_edges, sizeof(MaMaEdge) * mama.nof_sn, cudaMemcpyHostToDevice);
+    cudaMalloc(&d_source, sizeof(int) * mama.total_count);
+    cudaMemcpy(d_source, mama.source, sizeof(int) * mama.total_count,
+               cudaMemcpyHostToDevice);
 
-    for (int i = 0; i < mama.nof_sn; i++) {
-        cudaMalloc((void **)&source[i], sizeof(int));
-        cudaMemcpy(source[i], mama.flat_edges[i].source, sizeof(int), cudaMemcpyHostToDevice);
+    cudaMalloc(&d_target, sizeof(int) * mama.total_count);
+    cudaMemcpy(d_target, mama.target, sizeof(int) * mama.total_count,
+               cudaMemcpyHostToDevice);
 
-        cudaMalloc((void **)&target[i], sizeof(int));
-        cudaMemcpy(target[i], mama.flat_edges[i].target, sizeof(int), cudaMemcpyHostToDevice);
+    cudaMalloc(&d_attr, sizeof(char) * (mama.length_string + 1));
+    cudaMemcpy(d_attr, mama.attr, sizeof(char) * mama.length_string,
+               cudaMemcpyHostToDevice);
 
-        cudaMalloc((void ***)&attr[i], sizeof(char));
-        cudaMemcpy(source[i], mama.flat_edges[i].attr, sizeof(int), cudaMemcpyHostToDevice);
-    }
-
-    */
-
+    cudaMalloc(&d_offset_attr, sizeof(int) * (mama.total_count + 1));
+    cudaMemcpy(d_offset_attr, mama.offset_attr, sizeof(int) * (mama.total_count + 1),
+               cudaMemcpyHostToDevice);
 
     cudaMalloc(&d_flat_edges_indexes, sizeof(int) * mama.nof_sn);
     cudaMemcpy(d_flat_edges_indexes, mama.flat_edges_indexes, sizeof(int) * mama.nof_sn,
                cudaMemcpyHostToDevice);
-
 
 
     cudaMalloc(&d_map_node_to_state, sizeof(int) * mama.nof_sn);
@@ -125,6 +165,34 @@ void mama_malloc(MatchingMachine &mama) {
     cudaMemcpy(d_parent_type, mama.parent_type, sizeof(int) * mama.nof_sn,
                cudaMemcpyHostToDevice);
 
+}
+
+void in_out_malloc(bool *printToConsole, long *matchCount, int *comparatorType, long *steps,
+                   long *triedcouples,
+                   long *matchedcouples) {
+    cudaMalloc(&d_printToConsole, sizeof(bool));
+    cudaMemcpy(d_printToConsole, printToConsole, sizeof(int),
+               cudaMemcpyHostToDevice);
+
+    cudaMalloc(&d_matchCount, sizeof(long));
+    cudaMemcpy(d_matchCount, matchCount, sizeof(long),
+               cudaMemcpyHostToDevice);
+
+    cudaMalloc(&d_comparatorType, sizeof(int));
+    cudaMemcpy(d_comparatorType, comparatorType, sizeof(int),
+               cudaMemcpyHostToDevice);
+
+    cudaMalloc(&d_steps, sizeof(long));
+    cudaMemcpy(d_steps, steps, sizeof(long),
+               cudaMemcpyHostToDevice);
+
+    cudaMalloc(&d_triedcouples, sizeof(long));
+    cudaMemcpy(d_triedcouples, triedcouples, sizeof(long),
+               cudaMemcpyHostToDevice);
+
+    cudaMalloc(&d_matchedcouples, sizeof(long));
+    cudaMemcpy(d_matchedcouples, matchedcouples, sizeof(long),
+               cudaMemcpyHostToDevice);
 }
 
 

@@ -73,6 +73,8 @@ public:
 	int * source;
 	int * target;
 	void * attr;
+    int total_count;
+    int length_string;
 	int * offset_attr;
 	int * flat_edges_indexes; 
 
@@ -96,6 +98,8 @@ public:
 		parent_state = (int*) calloc(nof_sn, sizeof(int));
 		parent_type = new int[nof_sn];
 
+        total_count = 0;
+        length_string = 0;
 		//build(query);
 	}
 

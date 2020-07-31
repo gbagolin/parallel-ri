@@ -55,8 +55,6 @@ public:
 		int* t_parent_node = (int*) calloc(nof_sn, sizeof(int));			//indexed by node_id
 		int* t_parent_type = new int[nof_sn];		//indexed by node id
 
-		int total_count = 0;
-
 		for(int i=0; i<nof_sn; i++){
 			node_flags[i] = NS_UNV;
 			weights[i] = new int[3];
@@ -271,47 +269,39 @@ public:
 		flat_edges = new MaMaEdge[total_count];
 		source = new int[total_count];
 		target = new int[total_count];
-		flat_edges_indexes = new int[nof_sn]; 
-		/*
-		for(int si = 0, c = 0; si < nof_sn; si++){
-			n = map_state_to_node[si];
+		flat_edges_indexes = new int[nof_sn];
+        offset_attr = new int[total_count + 1];
 
-			for(int i = 0,  j = 0; i < ssg.out_adj_sizes[n]; i++, j++){
-				flat_edges[si + c] = edges[si][j]
-				c++; 
-			}
+        for(int si = 0, int c = 0; si < nof_sn; si++){
 
-		}
-		*/
-		int length_string = 0;
-		for(int si = 0, int c = 0; si < nof_sn; si++){
+            flat_edges_indexes[si] = c;
 
-			flat_edges_indexes[si] = c; 
+            for(int j = 0; j < edges_sizes[si]; j++){
+                flat_edges[c + j].source = edges[si][j].source;
+                source[c + j] = edges[si][j].source;
+                flat_edges[c + j].target = edges[si][j].target;
+                target[c + j] = edges[si][j].target;
+                flat_edges[c + j].attr = edges[si][j].attr;
 
-			for(int j = 0; j < edges_sizes[si]; j++){
-				flat_edges[c + j].source = edges[si][j].source;
-				source[c + j] = edges[si][j].source;
-				flat_edges[c + j].target = edges[si][j].target;
-				target[c + j] = edges[si][j].target;
-				flat_edges[c + j].attr = edges[si][j].attr;
-                length_string += strlen((char *)edges[si][j].attr);
-			}
+                length_string += edges[si][j].attr == NULL ? 0 : strlen((char *)edges[si][j].attr);
+            }
 
-			c += edges_sizes[si]; 
-		}
+            c += edges_sizes[si];
+        }
 
-		attr = new char[length_string + 1];
+        attr = new char[length_string + 1];
 		int count = 0;
         for(int si = 0, int c = 0; si < nof_sn; si++){
             for(int j = 0; j < edges_sizes[si]; j++){
-                strcat((char * )attr, (char *)flat_edges[c + j].attr);
-                offset_attr[c + j + 1] = offset_attr[c + j] + strlen((char *)flat_edges[c + j].attr);
+                if(flat_edges[c + j].attr != NULL){
+                    strcat((char * )attr, (char *)flat_edges[c + j].attr);
+                    offset_attr[c + j + 1] = offset_attr[c + j] + strlen((char *)flat_edges[c + j].attr);
+                }
             }
 
             c += edges_sizes[si];
 
         }
-
 
 		/*
 		for(int si = 0, int c = 0; si < nof_sn; si++){
