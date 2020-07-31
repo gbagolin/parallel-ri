@@ -101,13 +101,14 @@ bool edgesSubCheck(int si, int ci, int *solution, bool *matched, int *edges_size
 
 __global__
 void subsolver(
-        //printToConsole
-
+        //in_out
         bool *printToConsole,
         long *matchCount,
-        //typeComparator
         int *type_comparator,
-        //Mama
+        long *steps,
+        long *triedcouples,
+        long *matchedcouples,
+        //mama
         int *nof_sn,
         int *edges_sizes,
         int *flat_edges_indexes,
@@ -119,7 +120,7 @@ void subsolver(
         int *map_state_to_node,
         int *parent_state,
         int *parent_type,
-        //rgraph
+        //reference
         int *r_nof_nodes,
         int *r_in_adj_list, //flatted
         int *r_offset_in_adj_list,
@@ -130,7 +131,7 @@ void subsolver(
         void *r_nodes_attrs,//flatted
         int *r_offset_nodes_attr,
         void *r_out_adj_attrs,
-        //qgraph
+        //query
         int *q_nof_nodes,
         int *q_in_adj_list,//flatted
         int *q_offset_in_adj_list,
@@ -139,18 +140,33 @@ void subsolver(
         int *q_offset_q_out_adj_list,
         int *q_out_adj_sizes,
         void *q_nodes_attrs, //flatted
-        int *q_offset_nodes_attr,
-
-        long *steps,
-        long *triedcouples,
-        long *matchedcouples
-
+        int *q_offset_nodes_attr
 
 ) {
+    printf("sono il kernel");
+    /*
+    printf("Kernel: printToConsole %d\n", *printToConsole);
+    printf("Kernel: matchCount %d\n", *matchCount);
+    printf("Kernel: type_comparator %d\n", *type_comparator);
+    printf("Kernel: steps %d\n", *steps);
+    printf("Kernel: triedcouples %d\n", *triedcouples);
+    printf("Kernel: matchedcouples %d\n", *matchedcouples);
+
+
     printf("Kernel: nof_sn %d\n", *nof_sn);
 
+    printf("Kernel: edges_sizes %d\n", edges_sizes[1]);
+
+    printf("Kernel: source %d\n", source[2]);
+
+    printf("Kernel: r_nof_nodes %d\n", r_nof_nodes[0]);
+
+    printf("Kernel: q_nof_nodes %d\n", q_nof_nodes[0]);
+
+    */
+
     //printf("ciaoooo\n");
-    /*
+
     //printf("qui ci entro");
 
     //printf("%s\n", (char *)(attr));
@@ -179,7 +195,7 @@ void subsolver(
     }
 
 
-    bool cmatched[1000][1000];
+    bool cmatched[10][10];
 
 //printf("%i, %i, %i\n", *nof_sn, *r_nof_nodes, *q_nof_nodes);
 
@@ -209,11 +225,11 @@ void subsolver(
         candidatesIT[si]++;
 
         while (candidatesIT[si] < candidatesSize[si]) {
+            //printf("ok");
 //triedcouples++;
 
             ci = candidates[si][candidatesIT[si]];
-            solution[si] =
-                    ci;
+            solution[si] = ci;
 
 //				std::cout<<"[ "<<map_state_to_node[si]<<" , "<<ci<<" ]\n";
 //				if(matched[ci]) std::cout<<"fails on alldiff\n";
@@ -221,10 +237,11 @@ void subsolver(
 //				if(!(edgesCheck(si, ci, solution, matched))) std::cout<<"fails on edges \n";
 
 //MT_ISO
+
+            /*
             if (!matched[ci]) {
 
                 if (cmatched[si][ci] == false) {
-
 
                     if (nodeSubCheck(si, ci, map_state_to_node, r_out_adj_sizes, q_out_adj_sizes, r_in_adj_sizes,
                                      q_in_adj_sizes, r_nodes_attrs, r_offset_nodes_attr, q_nodes_attrs,
@@ -237,6 +254,8 @@ void subsolver(
                 }
 
             }
+
+            */
 
             if ((!matched[ci])
                 && (cmatched[si][ci] == false)
@@ -313,7 +332,7 @@ void subsolver(
                                 arr_len;
                        // printf("%d", arr_len == r_in_adj_sizes[solution[parent_state[sip1]]]);
                     } else {//(parent_type[sip1] == MAMA_PARENTTYPE::PARENTTYPE_OUT)
-
+                        printf("sono qui");
                         int r_start_out_adj_list = r_offset_out_adj_list[solution[parent_state[sip1]]];
                         int r_end_out_adj_list = r_offset_out_adj_list[solution[parent_state[sip1]] + 1];
                         int arr_len = r_end_out_adj_list - r_start_out_adj_list;
@@ -353,7 +372,7 @@ void subsolver(
             candidates;
     delete[]
             listAllRef;
-    */
+
 
 }
 

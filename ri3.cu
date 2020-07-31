@@ -49,7 +49,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "SubGISolver.h"
 #include "InducedSubGISolver.h"
 #include "flatter.h"
-#include "mallocUtility.h"
+//#include "mallocUtility.h"
 
 //#define PRINT_MATCHES
 //#define CSV_FORMAT
@@ -198,7 +198,7 @@ int match(
 	load_t_q+=end_time(load_s_q);
    // printf("ho creato il grafo\n");
     //cudaMalloc query
-    query_malloc(*query);
+    //query_malloc(*query);
 
 	if(rret !=0){
 		std::cout<<"error on reading query graph\n";
@@ -212,7 +212,7 @@ int match(
 
     flatterGraph(query);
 
-    mama_malloc(*mama);
+    //mama_malloc(*mama);
 
 	//mama->print();
 
@@ -249,7 +249,7 @@ int match(
 			rreaded = (rret == 0);
 			load_t+=end_time(load_s);
 
-            reference_malloc(*rrg);
+           // reference_malloc(*rrg);
 
 			if(rreaded){
 					

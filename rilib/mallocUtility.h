@@ -1,48 +1,9 @@
 #ifndef MALLOCUTILITY_H_
 #define MALLOCUTILITY_H_
 
-bool *d_printToConsole;
-long *d_matchCount;
-//typeComparator
-int *d_comparatorType;
 
 
-int *d_r_nof_nodes;
-int *d_r_flatten_in_adj_list;
-int *d_r_offset_in_adj_list;
-int *d_r_in_adj_sizes;
-int *d_r_flatten_out_adj_list;
-int *d_r_offset_out_adj_list;
-int *d_r_out_adj_sizes;
-void *d_r_flatten_nodes_attr;
-int *d_r_offset_nodes_attr;
-void *d_r_out_adj_attrs = NULL;
 
-int *d_q_nof_nodes;
-int *d_q_flatten_in_adj_list;
-int *d_q_offset_in_adj_list;
-int *d_q_in_adj_sizes;
-int *d_q_flatten_out_adj_list;
-int *d_q_offset_out_adj_list;
-int *d_q_out_adj_sizes;
-void *d_q_flatten_nodes_attr;
-int *d_q_offset_nodes_attr;
-
-int *d_nof_sn;
-int *d_edges_sizes;
-int *d_source;
-int *d_target;
-void *d_attr;
-int *d_offset_attr;
-int *d_flat_edges_indexes;
-int *d_map_node_to_state;
-int *d_map_state_to_node;
-int *d_parent_state;
-int *d_parent_type;
-
-long *d_steps;
-long *d_triedcouples;
-long *d_matchedcouples;
 
 
 void reference_malloc(Graph &reference) {
