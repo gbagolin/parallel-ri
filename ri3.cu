@@ -42,6 +42,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Graph.h"
 #include "MatchingMachine.h"
 #include "MaMaConstrFirst.h"
+//#include "mallocUtility.h"
 #include "Match.h"
 
 //#define FIRST_MATCH_ONLY  //if setted, the searching process stops at the first found match
@@ -49,278 +50,297 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "SubGISolver.h"
 #include "InducedSubGISolver.h"
 #include "flatter.h"
-//#include "mallocUtility.h"
 
 #define PRINT_MATCHES
 //#define CSV_FORMAT
-
+#define N_TEST 100
 
 using namespace rilib;
 
 
-void usage(char* args0);
-int match(MATCH_TYPE matchtype, GRAPH_FILE_TYPE filetype,	std::string& referencefile,	std::string& queryfile);
+void usage(char *args0);
 
-int main(int argc, char* argv[]){
+int match(MATCH_TYPE matchtype, GRAPH_FILE_TYPE filetype, std::string &referencefile, std::string &queryfile);
 
-	if(argc!=5){
-		usage(argv[0]);
-		return -1;
-	}
+int main(int argc, char *argv[]) {
 
-	MATCH_TYPE matchtype;
-	GRAPH_FILE_TYPE filetype;
-	std::string reference;
-	std::string query;
+    if (argc != 5) {
+        usage(argv[0]);
+        return -1;
+    }
 
-	std::string par = argv[1];
-	if(par=="iso"){
-		matchtype = MT_ISO;
-	}
-	else if(par=="ind"){
-		matchtype = MT_INDSUB;
-	}
-	else if(par=="mono"){
-		matchtype = MT_MONO;
-	}
-	else{
-		usage(argv[0]);
-		return -1;
-	}
+    MATCH_TYPE matchtype;
+    GRAPH_FILE_TYPE filetype;
+    std::string reference;
+    std::string query;
 
-	par = argv[2];
-	if(par=="gfu"){
-		filetype = GFT_GFU;
-	}
-	else if(par=="gfd"){
-		filetype = GFT_GFD;
-	}
-	else if(par=="gfda"){
-			filetype = GFT_GFDA;
-		}
-	else if(par=="geu"){
-		filetype = GFT_EGFU;
-	}
-	else if(par=="ged"){
-		filetype = GFT_EGFD;
-	}
-	else if(par=="vfu"){
-		filetype = GFT_VFU;
-	}
-	else{
-		usage(argv[0]);
-		return -1;
-	}
+    std::string par = argv[1];
+    if (par == "iso") {
+        matchtype = MT_ISO;
+    } else if (par == "ind") {
+        matchtype = MT_INDSUB;
+    } else if (par == "mono") {
+        matchtype = MT_MONO;
+    } else {
+        usage(argv[0]);
+        return -1;
+    }
 
-	reference = argv[3];
-	query = argv[4];
+    par = argv[2];
+    if (par == "gfu") {
+        filetype = GFT_GFU;
+    } else if (par == "gfd") {
+        filetype = GFT_GFD;
+    } else if (par == "gfda") {
+        filetype = GFT_GFDA;
+    } else if (par == "geu") {
+        filetype = GFT_EGFU;
+    } else if (par == "ged") {
+        filetype = GFT_EGFD;
+    } else if (par == "vfu") {
+        filetype = GFT_VFU;
+    } else {
+        usage(argv[0]);
+        return -1;
+    }
 
-	return match(matchtype, filetype, reference, query);
+    reference = argv[3];
+    query = argv[4];
+
+    return match(matchtype, filetype, reference, query);
 };
 
 
-
-
-
-void usage(char* args0){
-	std::cout<<"usage "<<args0<<" [iso ind mono] [gfu gfd gfda geu ged vfu] reference query\n";
-	std::cout<<"\tmatch type:\n";
-	std::cout<<"\t\tiso = isomorphism\n";
-	std::cout<<"\t\tind = induced subisomorphism\n";
-	std::cout<<"\t\tmono = monomorphism\n";
-	std::cout<<"\tgraph input format:\n";
-	std::cout<<"\t\tgfu = undirect graphs with labels on nodes\n";
-	std::cout<<"\t\tgfd = direct graphs with labels on nodes\n";
-	std::cout<<"\t\tgfd = direct graphs with one single label on nodes\n";
-	std::cout<<"\t\tgeu = undirect graphs with labels both on nodes and edges\n";
-	std::cout<<"\t\tged = direct graphs with labels both on nodes and edges\n";
-	std::cout<<"\t\tvfu = VF2Lib undirect unlabeled format\n";
-	std::cout<<"\treference file contains one or more reference graphs\n";
-	std::cout<<"\tquery contains the query graph (just one)\n";
+void usage(char *args0) {
+    std::cout << "usage " << args0 << " [iso ind mono] [gfu gfd gfda geu ged vfu] reference query\n";
+    std::cout << "\tmatch type:\n";
+    std::cout << "\t\tiso = isomorphism\n";
+    std::cout << "\t\tind = induced subisomorphism\n";
+    std::cout << "\t\tmono = monomorphism\n";
+    std::cout << "\tgraph input format:\n";
+    std::cout << "\t\tgfu = undirect graphs with labels on nodes\n";
+    std::cout << "\t\tgfd = direct graphs with labels on nodes\n";
+    std::cout << "\t\tgfd = direct graphs with one single label on nodes\n";
+    std::cout << "\t\tgeu = undirect graphs with labels both on nodes and edges\n";
+    std::cout << "\t\tged = direct graphs with labels both on nodes and edges\n";
+    std::cout << "\t\tvfu = VF2Lib undirect unlabeled format\n";
+    std::cout << "\treference file contains one or more reference graphs\n";
+    std::cout << "\tquery contains the query graph (just one)\n";
 };
 
 
 int match(
-		MATCH_TYPE 			matchtype,
-		GRAPH_FILE_TYPE 	filetype,
-		std::string& 		referencefile,
-		std::string& 	queryfile){
+        MATCH_TYPE matchtype,
+        GRAPH_FILE_TYPE filetype,
+        std::string &referencefile,
+        std::string &queryfile) {
 
-	TIMEHANDLE load_s, load_s_q, make_mama_s, match_s, total_s;
-	double load_t=0;double load_t_q=0; double make_mama_t=0; double match_t=0; double total_t=0;
-	total_s=start_time();
+    total_s = start_time();
 
-	bool takeNodeLabels = false;
-	bool takeEdgesLabels = false;
-	int rret;
+    bool takeNodeLabels = false;
+    bool takeEdgesLabels = false;
+    int rret;
 
-	AttributeComparator* nodeComparator;			//to compare node labels
-	AttributeComparator* edgeComparator;			//to compare edge labels
-	switch(filetype){
-		case GFT_GFU:
-		case GFT_GFD:
-			// only nodes have labels and they are strings
-			nodeComparator = new StringAttrComparator();
-			edgeComparator = new DefaultAttrComparator();
-			takeNodeLabels = true;
-			break;
-		case GFT_GFDA:
-			nodeComparator = new DefaultAttrComparator();
-			edgeComparator = new DefaultAttrComparator();
-			takeNodeLabels = true;
-			break;
-		case GFT_EGFU:
-		case GFT_EGFD:
-			//labels on nodes and edges, both of them are strings
-			nodeComparator = new StringAttrComparator();
-			edgeComparator = new StringAttrComparator();
-			takeNodeLabels = true;
-			takeEdgesLabels = true;
-			break;
-		case GFT_VFU:
-			//no labels
-			nodeComparator = new DefaultAttrComparator();
-			edgeComparator = new DefaultAttrComparator();
-			break;
-    default:
-      return -1;
-	}
+    AttributeComparator *nodeComparator;            //to compare node labels
+    AttributeComparator *edgeComparator;            //to compare edge labels
+    switch (filetype) {
+        case GFT_GFU:
+        case GFT_GFD:
+            comparatorType = 0;
+            // only nodes have labels and they are strings
+            nodeComparator = new StringAttrComparator();
+            edgeComparator = new DefaultAttrComparator();
+            takeNodeLabels = true;
+            break;
+        case GFT_GFDA:
+            comparatorType = 1;
+            nodeComparator = new DefaultAttrComparator();
+            edgeComparator = new DefaultAttrComparator();
+            takeNodeLabels = true;
+            break;
+        case GFT_EGFU:
+        case GFT_EGFD:
+            comparatorType = 2;
+            //labels on nodes and edges, both of them are strings
+            nodeComparator = new StringAttrComparator();
+            edgeComparator = new StringAttrComparator();
+            takeNodeLabels = true;
+            takeEdgesLabels = true;
+            break;
+        case GFT_VFU:
+            comparatorType = 1;
+            //no labels
+            nodeComparator = new DefaultAttrComparator();
+            edgeComparator = new DefaultAttrComparator();
+            break;
+        default:
+            return -1;
+    }
 
-	TIMEHANDLE tt_start;
-	double tt_end;
+    TIMEHANDLE tt_start;
+    double tt_end;
 
 
 
-	//read the query graph
-	load_s_q=start_time();
-	Graph *query = new Graph();
-	rret = read_graph(queryfile.c_str(), query, filetype);
-	load_t_q+=end_time(load_s_q);
-   // printf("ho creato il grafo\n");
+    //read the query graph
+    load_s_q = start_time();
+    Graph *query = new Graph();
+    rret = read_graph(queryfile.c_str(), query, filetype);
+    load_t_q += end_time(load_s_q);
+    // printf("ho creato il grafo\n");
     //cudaMalloc query
-    //query_malloc(*query);
 
-	if(rret !=0){
-		std::cout<<"error on reading query graph\n";
-	}
 
-	make_mama_s=start_time();
-	MaMaConstrFirst* mama = new MaMaConstrFirst(*query);
-   // printf("ho creato l'oggetto mama\n");
-	mama->build(*query);
-	make_mama_t+=end_time(make_mama_s);
+    if (rret != 0) {
+        std::cout << "error on reading query graph\n";
+    }
+
+    make_mama_s = start_time();
+    MaMaConstrFirst *mama = new MaMaConstrFirst(*query);
+    // printf("ho creato l'oggetto mama\n");
+    mama->build(*query);
+    make_mama_t += end_time(make_mama_s);
 
     flatterGraph(query);
+    /*
+    query_malloc(*query);
+    in_out_malloc();
+    mama_malloc(*mama);
+    */
+    //mama->print();
 
-    //mama_malloc(*mama);
-
-	//mama->print();
-
-	long 	steps = 0,				//total number of steps of the backtracking phase
-			triedcouples = 0, 		//nof tried pair (query node, reference node)
-			matchcount = 0, 		//nof found matches
-			matchedcouples = 0;		//nof mathed pair (during partial solutions)
-	long tsteps = 0, ttriedcouples = 0, tmatchedcouples = 0;
-
-	FILE *fd = open_file(referencefile.c_str(), filetype);
-	if(fd != NULL){
-		bool printToConsole = false;
-		long matchCount = 0; 
+    long steps = 0,                //total number of steps of the backtracking phase
+    triedcouples = 0,        //nof tried pair (query node, reference node)
+    matchcount = 0,        //nof found matches
+    matchedcouples = 0;        //nof mathed pair (during partial solutions)
+    long tsteps = 0, ttriedcouples = 0, tmatchedcouples = 0;
+    int test = 0;
+    FILE *fd = open_file(referencefile.c_str(), filetype);
+    if (fd != NULL) {
+        bool printToConsole = false;
+        long matchCount = 0;
 #ifdef PRINT_MATCHES
-		//to print found matches on screen
-		
-		MatchListener* matchListener=new ConsoleMatchListener();
-		printToConsole = true; 
+        //to print found matches on screen
+
+        MatchListener *matchListener = new ConsoleMatchListener();
+        printToConsole = true;
 #else
-		//do not print matches, just count them
-		MatchListener* matchListener=new EmptyMatchListener();
-		printToConsole = false;
+        //do not print matches, just count them
+        MatchListener *matchListener = new EmptyMatchListener();
+        printToConsole = false;
 #endif
-		int i=0;
-		bool rreaded = true;
-		do{//for each reference graph inside the input file
+        int i = 0;
+        bool rreaded = true;
+        int count = 0;
+        do {//for each reference graph inside the input file
 #ifdef PRINT_MATCHES
-			std::cout<<"#"<<i<<"\n";
+            std::cout << "#" << i << "\n";
 #endif
-			//read the next reference graph
-			load_s=start_time();
-			Graph * rrg = new Graph();
-			int rret = read_dbgraph(referencefile.c_str(), fd, rrg, filetype);
-			rreaded = (rret == 0);
-			load_t+=end_time(load_s);
+            //read the next reference graph
+            load_s = start_time();
+            Graph *rrg = new Graph();
+            int rret = read_dbgraph(referencefile.c_str(), fd, rrg, filetype);
+            rreaded = (rret == 0);
+            load_t += end_time(load_s);
 
-           // reference_malloc(*rrg);
+            if (rreaded) {
+                count++;
+                flatterGraph(rrg);
+                reference_malloc(*rrg);
+                reference_memcpy(*rrg);
+                query_malloc(*query);
+                in_out_malloc();
+                mama_malloc(*mama);
 
-			if(rreaded){
+                //run the matching
+                //match_s = start_time();
+                match(&test,
+                      *rrg,
+                      *query,
+                      *mama,
+                      *matchListener,
+                      matchtype,
+                      *nodeComparator,
+                      *edgeComparator,
+                      &tsteps,
+                      &ttriedcouples,
+                      &tmatchedcouples,
+                      filetype,
+                      &printToConsole,
+                      &matchCount
+                );
+                //match_t += end_time(match_s);
 
-					//run the matching
-					match_s=start_time();
-					match(	*rrg,
-							*query,
-							*mama,
-							*matchListener,
-							matchtype,
-							*nodeComparator,
-							*edgeComparator,
-							&tsteps,
-							&ttriedcouples,
-							&tmatchedcouples,
-							filetype,
-							&printToConsole,
-							&matchCount
-						);
-					match_t+=end_time(match_s);
-
-					//see rilib/Solver.h
+                //see rilib/Solver.h
 //					steps += tsteps;
 //					triedcouples += ttriedcouples;
-					matchedcouples += tmatchedcouples;
-					tmatchedcouples = 0; 
-				}
-        delete rrg;
-				
-			i++;
-		}while(rreaded);
+                matchedcouples += tmatchedcouples;
+                tmatchedcouples = 0;
+                mama_free();
+                query_free();
+                reference_free();
+                SAFE_CALL(cudaFree(d_steps));
+                SAFE_CALL(cudaFree(d_triedcouples));
+                SAFE_CALL(cudaFree(d_matchedcouples));
+                SAFE_CALL(cudaFree(d_matchCount));
+                SAFE_CALL(cudaFree(d_printToConsole));
+                SAFE_CALL(cudaFree(d_comparatorType));
+                cudaDeviceReset();
 
-		//matchcount = matchListener->matchcount;
-		matchcount = matchCount;
-		delete matchListener;
+            }
 
-		fclose(fd);
-	}
-	else{
-		std::cout<<"unable to open reference file\n";
-		return -1;
-	}
+            delete rrg;
 
-	total_t=end_time(total_s);
+            i++;
+        } while (rreaded && count < N_TEST);
+
+        /*
+        SAFE_CALL(cudaFree(d_steps));
+        SAFE_CALL(cudaFree(d_triedcouples));
+        SAFE_CALL(cudaFree(d_matchedcouples));
+        SAFE_CALL(cudaFree(d_matchCount));
+        SAFE_CALL(cudaFree(d_printToConsole));
+        SAFE_CALL(cudaFree(d_comparatorType));
+        cudaDeviceReset();
+        */
+        //matchcount = matchListener->matchcount;
+        matchcount = matchCount;
+        delete matchListener;
+
+        fclose(fd);
+    } else {
+        std::cout << "unable to open reference file\n";
+        return -1;
+    }
+
+    total_t = end_time(total_s);
 
 #ifdef CSV_FORMAT
-	std::cout<<referencefile<<"\t"<<queryfile<<"\t";
-	std:cout<<load_t_q<<"\t"<<make_mama_t<<"\t"<<load_t<<"\t"<<match_t<<"\t"<<total_t<<"\t"<<steps<<"\t"<<triedcouples<<"\t"<<matchedcouples<<"\t"<<matchcount;
+    std::cout<<referencefile<<"\t"<<queryfile<<"\t";
+    std:cout<<load_t_q<<"\t"<<make_mama_t<<"\t"<<load_t<<"\t"<<match_t<<"\t"<<total_t<<"\t"<<steps<<"\t"<<triedcouples<<"\t"<<matchedcouples<<"\t"<<matchcount;
 #else
-	std::cout<<"reference file: "<<referencefile<<"\n";
-	std::cout<<"query file: "<<queryfile<<"\n";
-	std::cout<<"total time: "<<total_t<<"\n";
-	std::cout<<"matching time: "<<match_t<<"\n";
-	std::cout<<"number of found matches: "<<matchcount<<"\n";
-	std::cout<<"search space size: "<<matchedcouples<<"\n";
-	cout << "Pattern Graph load time " << load_t_q << endl;
-    cout << "Target Graphs load time " << load_t<< endl;
-	cout << "mama time: " << make_mama_t << endl;
-
+    std::cout << "reference file: " << referencefile << "\n";
+    std::cout << "query file: " << queryfile << "\n";
+    std::cout << "total time: " << total_t << "\n";
+    std::cout << "matching time: " << match_t << "\n";
+    std::cout << "number of found matches: " << matchcount << "\n";
+    std::cout << "search space size: " << matchedcouples << "\n";
+    cout << "Pattern Graph load time " << load_t_q << endl;
+    cout << "Target Graphs load time " << load_t << endl;
+    cout << "mama time: " << make_mama_t << endl;
+    cout << "test: " << test << endl;
 #endif
 
 //	delete mama;
 //	delete query;
 
-  delete mama;
-  delete query;
-  
-  delete nodeComparator;
-  delete edgeComparator;
-  
-	return 0;
+    delete mama;
+    delete query;
+
+    delete nodeComparator;
+    delete edgeComparator;
+
+    return 0;
 };
 
 

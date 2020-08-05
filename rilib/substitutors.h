@@ -79,7 +79,7 @@ __device__
 void matchListener(bool* printToConsole,long * matchcount, int n, int* qIDs, int* rIDs){
 
         if(*printToConsole){
-            (*matchcount)++;
+            atomicAdd ( (int*)matchcount , 1);
             printf("{");
             for(int i=0; i<n; i++){
                 printf("(%d,%d)", qIDs[i] , rIDs[i]);
@@ -87,7 +87,7 @@ void matchListener(bool* printToConsole,long * matchcount, int n, int* qIDs, int
             printf("}\n");
         }
         else{
-            (*matchcount)++; 
+            atomicAdd ( (int*)matchcount , 1);
         }
 		
 	}
