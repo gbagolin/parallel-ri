@@ -43,6 +43,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "mallocUtility.h"
 #include "CheckError.cuh"
 
+#define BLOCK_DIM 1024
+
 namespace rilib {
 
     using namespace rilib;
@@ -112,9 +114,11 @@ namespace rilib {
                 //printf("matchedcouples: %d\n", *matchedcouples);
                 //printf("matchCount: %d\n", *matchCount);
                 match_s = start_time();
-                dim3 thread_num = reference.nof_nodes;
-                dim3 block_num = 1;
-                subsolver<<<block_num ,thread_num>>>(
+                dim3 DimGrid(reference.nof_nodes / BLOCK_DIM, 1, 1);
+                if (reference.nof_nodes % BLOCK_DIM) DimGrid.x++;
+                dim3 DimBlock(BLOCK_DIM, 1, 1);
+
+                subsolver<<<DimGrid , DimBlock>>>(
                 d_test,
                         //in_out
                         d_printToConsole,

@@ -53,7 +53,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define PRINT_MATCHES
 //#define CSV_FORMAT
-#define N_TEST 100
+#define N_TEST 1
 
 using namespace rilib;
 
@@ -292,7 +292,7 @@ int match(
             delete rrg;
 
             i++;
-        } while (rreaded && count < N_TEST);
+        } while (rreaded);
 
         /*
         SAFE_CALL(cudaFree(d_steps));
