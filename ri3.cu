@@ -51,9 +51,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "InducedSubGISolver.h"
 #include "flatter.h"
 
-#define PRINT_MATCHES
+//#define PRINT_MATCHES
 //#define CSV_FORMAT
-#define N_TEST 1
+#define N_TEST 10
 
 using namespace rilib;
 
@@ -214,7 +214,6 @@ int match(
     matchcount = 0,        //nof found matches
     matchedcouples = 0;        //nof mathed pair (during partial solutions)
     long tsteps = 0, ttriedcouples = 0, tmatchedcouples = 0;
-    int test = 0;
     FILE *fd = open_file(referencefile.c_str(), filetype);
     if (fd != NULL) {
         bool printToConsole = false;
@@ -245,6 +244,7 @@ int match(
 
             if (rreaded) {
                 count++;
+                
                 flatterGraph(rrg);
                 reference_malloc(*rrg);
                 reference_memcpy(*rrg);
@@ -254,7 +254,7 @@ int match(
 
                 //run the matching
                 //match_s = start_time();
-                match(&test,
+                match(
                       *rrg,
                       *query,
                       *mama,
@@ -286,13 +286,13 @@ int match(
                 SAFE_CALL(cudaFree(d_printToConsole));
                 SAFE_CALL(cudaFree(d_comparatorType));
                 cudaDeviceReset();
-
+                
             }
 
             delete rrg;
 
             i++;
-        } while (rreaded);
+        } while (rreaded && count < N_TEST);
 
         /*
         SAFE_CALL(cudaFree(d_steps));
@@ -328,7 +328,6 @@ int match(
     cout << "Pattern Graph load time " << load_t_q << endl;
     cout << "Target Graphs load time " << load_t << endl;
     cout << "mama time: " << make_mama_t << endl;
-    cout << "test: " << test << endl;
 #endif
 
 //	delete mama;

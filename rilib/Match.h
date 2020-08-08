@@ -65,7 +65,6 @@ namespace rilib {
 
 
     void match(
-            int *test,
             Graph &reference,
             Graph &query,
             MatchingMachine &matchingMachine,
@@ -108,18 +107,19 @@ namespace rilib {
 
                 break;
             case MT_MONO:
-
-
-                in_out_memcpy(test, &comparatorType, matchedcouples, printToConsole, matchCount);
-                //printf("matchedcouples: %d\n", *matchedcouples);
-                //printf("matchCount: %d\n", *matchCount);
-                match_s = start_time();
+                in_out_memcpy(&comparatorType, matchedcouples, printToConsole, matchCount);
+                size_t size = (query.nof_nodes*reference.nof_nodes)*reference.nof_nodes ;
                 dim3 DimGrid(reference.nof_nodes / BLOCK_DIM, 1, 1);
                 if (reference.nof_nodes % BLOCK_DIM) DimGrid.x++;
-                dim3 DimBlock(BLOCK_DIM, 1, 1);
-
+                dim3 DimBlock(BLOCK_DIM, 1, 1);     
+                if(reference.nof_nodes < 10000)           
+                cudaDeviceSetLimit(cudaLimitMallocHeapSize,0.3*size);
+                if(reference.nof_nodes < 20000)           
+                cudaDeviceSetLimit(cudaLimitMallocHeapSize,0.4*size);
+                if(reference.nof_nodes >20000)           
+                cudaDeviceSetLimit(cudaLimitMallocHeapSize,0.7*size);
+                match_s = start_time();
                 subsolver<<<DimGrid , DimBlock>>>(
-                d_test,
                         //in_out
                         d_printToConsole,
                         d_matchCount,
@@ -133,7 +133,6 @@ namespace rilib {
                         d_target,
                         d_attr,
                         d_offset_attr,
-                        d_map_node_to_state,
                         d_map_state_to_node,
                         d_parent_state,
                         d_parent_type,
@@ -149,12 +148,7 @@ namespace rilib {
                         d_r_offset_nodes_attr,
                         d_r_out_adj_attrs,
                         //query
-                        d_q_nof_nodes,
-                        d_q_flatten_in_adj_list,
-                        d_q_offset_in_adj_list,
                         d_q_in_adj_sizes,
-                        d_q_flatten_out_adj_list,
-                        d_q_offset_out_adj_list,
                         d_q_out_adj_sizes,
                         d_q_flatten_nodes_attr,
                         d_q_offset_nodes_attr);

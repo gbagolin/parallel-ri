@@ -12,7 +12,6 @@ double total_t = 0;
 double match_t = 0;
 
 
-int *d_test;
 bool *d_printToConsole;
 long *d_matchCount;
 int *d_comparatorType;
@@ -45,7 +44,6 @@ int *d_r_offset_nodes_attr;
 void *d_r_out_adj_attrs = NULL;
 
 //query
-int *d_q_nof_nodes;
 int *d_q_flatten_in_adj_list;
 int *d_q_offset_in_adj_list;
 int *d_q_in_adj_sizes;
@@ -60,7 +58,6 @@ int comparatorType;
 
 void in_out_malloc() {
 
-    SAFE_CALL(cudaMalloc(&d_test, sizeof(int)));
 
     SAFE_CALL(cudaMalloc(&d_printToConsole, sizeof(bool)));
 
@@ -72,14 +69,10 @@ void in_out_malloc() {
 
 }
 
-void in_out_memcpy(int *test,
-                   int *comparatorType,
+void in_out_memcpy(int *comparatorType,
                    long *matchedcouples,
                    bool *printToConsole,
                    long *matchCount) {
-
-    SAFE_CALL(cudaMemcpy(d_test, test, sizeof(int),
-                         cudaMemcpyHostToDevice));
 
     SAFE_CALL(cudaMemcpy(d_printToConsole, printToConsole, sizeof(bool),
                          cudaMemcpyHostToDevice));
@@ -123,11 +116,6 @@ void mama_malloc(MatchingMachine &matchingMachine) {
 
     SAFE_CALL(cudaMalloc(&d_flat_edges_indexes, sizeof(int) * matchingMachine.nof_sn));
     SAFE_CALL(cudaMemcpy(d_flat_edges_indexes, matchingMachine.flat_edges_indexes, sizeof(int) * matchingMachine.nof_sn,
-                         cudaMemcpyHostToDevice));
-
-
-    SAFE_CALL(cudaMalloc(&d_map_node_to_state, sizeof(int) * matchingMachine.nof_sn));
-    SAFE_CALL(cudaMemcpy(d_map_node_to_state, matchingMachine.map_node_to_state, sizeof(int) * matchingMachine.nof_sn,
                          cudaMemcpyHostToDevice));
 
     SAFE_CALL(cudaMalloc(&d_map_state_to_node, sizeof(int) * matchingMachine.nof_sn));
@@ -204,28 +192,9 @@ void reference_memcpy(Graph &reference){
 
 void query_malloc(Graph &query) {
 
-    SAFE_CALL(cudaMalloc(&d_q_nof_nodes, sizeof(int) * 1));
-    SAFE_CALL(cudaMemcpy(d_q_nof_nodes, &query.nof_nodes, sizeof(int), cudaMemcpyHostToDevice));
-
-    SAFE_CALL(cudaMalloc(&d_q_flatten_in_adj_list, sizeof(int) * query.length_in_adj_list));
-    SAFE_CALL(cudaMemcpy(d_q_flatten_in_adj_list, query.flatten_in_adj_list, sizeof(int) * query.length_in_adj_list,
-                         cudaMemcpyHostToDevice));
-
-    SAFE_CALL(cudaMalloc(&d_q_offset_in_adj_list, sizeof(int) * (query.nof_nodes + 1)));
-    SAFE_CALL(cudaMemcpy(d_q_offset_in_adj_list, query.offset_in_adj_list, sizeof(int) * (query.nof_nodes + 1),
-                         cudaMemcpyHostToDevice));
-
     SAFE_CALL(cudaMalloc(&d_q_in_adj_sizes, sizeof(int) * (query.nof_nodes)));
     SAFE_CALL(
             cudaMemcpy(d_q_in_adj_sizes, query.in_adj_sizes, sizeof(int) * (query.nof_nodes), cudaMemcpyHostToDevice));
-
-    SAFE_CALL(cudaMalloc(&d_q_flatten_out_adj_list, sizeof(int) * query.length_out_adj_list));
-    SAFE_CALL(cudaMemcpy(d_q_flatten_out_adj_list, query.flatten_out_adj_list, sizeof(int) * query.length_out_adj_list,
-                         cudaMemcpyHostToDevice));
-
-    SAFE_CALL(cudaMalloc(&d_q_offset_out_adj_list, sizeof(int) * (query.nof_nodes + 1)));
-    SAFE_CALL(cudaMemcpy(d_q_offset_out_adj_list, query.offset_out_adj_list, sizeof(int) * (query.nof_nodes + 1),
-                         cudaMemcpyHostToDevice));
 
     SAFE_CALL(cudaMalloc(&d_q_out_adj_sizes, sizeof(int) * (query.nof_nodes)));
     SAFE_CALL(
@@ -255,12 +224,7 @@ void reference_free() {
 }
 
 void query_free() {
-    SAFE_CALL(cudaFree(d_q_nof_nodes));
-    SAFE_CALL(cudaFree(d_q_flatten_in_adj_list));
-    SAFE_CALL(cudaFree(d_q_offset_in_adj_list));
     SAFE_CALL(cudaFree(d_q_in_adj_sizes));
-    SAFE_CALL(cudaFree(d_q_flatten_out_adj_list));
-    SAFE_CALL(cudaFree(d_q_offset_out_adj_list));
     SAFE_CALL(cudaFree(d_q_out_adj_sizes));
     SAFE_CALL(cudaFree(d_q_flatten_nodes_attr));
     SAFE_CALL(cudaFree(d_q_offset_nodes_attr));

@@ -32,7 +32,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef KERNEL_H_
 #define KERNEL_H_
-
+#define MAX_SIZE 35000
 
 #include "MatchingMachine.h"
 #include "AttributeComparator.h"
@@ -117,26 +117,24 @@ bool edgesSubCheck(int si, int ci, int *solution, bool *matched, int *edges_size
 __global__
 void subsolver(
         //test
-        int *test,
         //in_out
-        bool *printToConsole,
+        bool *d_printToConsole,
         long *matchCount,
-        int *type_comparator,
+        int *d_type_comparator,
         long *matchedcouples,
         //mama
-        int *nof_sn,
+        int *d_nof_sn,
         int *edges_sizes,
         int *flat_edges_indexes,
         int *source,
         int *target,
         void *attr,
         int *offset_attr,
-        int *map_node_to_state,
         int *map_state_to_node,
         int *parent_state,
         int *parent_type,
         //reference
-        int *r_nof_nodes,
+        int *d_r_nof_nodes,
         int *r_in_adj_list, //flatted
         int *r_offset_in_adj_list,
         int *r_in_adj_sizes,
@@ -147,70 +145,53 @@ void subsolver(
         int *r_offset_nodes_attr,
         void *r_out_adj_attrs,
         //query
-        int *q_nof_nodes,
-        int *q_in_adj_list,//flatted
-        int *q_offset_in_adj_list,
         int *q_in_adj_sizes,
-        int *q_out_adj_list, //flatted
-        int *q_offset_q_out_adj_list,
         int *q_out_adj_sizes,
         void *q_nodes_attrs, //flatted
         int *q_offset_nodes_attr
 
 ) {
 
-
-
-
-    /*
-    for (int i = 0; i < *nof_sn; i++)
-        cmatched[i] = new bool[*r_nof_nodes];
-    */
-    //bool cmatched[1000][1000] = {false};
-    //bool matched[1000] = {false};
-//printf("%i, %i, %i\n", *nof_sn, *r_nof_nodes, *q_nof_nodes);
-    /*
-    bool *matched = (bool *) malloc(*r_nof_nodes * sizeof(bool));
-    for (int i = 0; i < *r_nof_nodes; i++) {
-        matched[i] = false;
-    }
-    */
-
     int d[1];
     d[0] = threadIdx.x + blockDim.x * blockIdx.x;
+   // extern __shared__ int testing2[];
 
-    if (d[0] >= *r_nof_nodes) {
-        printf("%d\n",d[0]);
+    __shared__ int r_nof_nodes;
+    __shared__ bool printToConsole;
+    __shared__ int type_comparator;
+    __shared__ int nof_sn;
+   
+
+
+    
+    if (threadIdx.x==0){
+        r_nof_nodes = *d_r_nof_nodes;
+        printToConsole = *d_printToConsole;
+        type_comparator = *d_type_comparator;
+        nof_sn =*d_nof_sn;
+       
+    }
+    __syncthreads();
+    if (d[0] >= r_nof_nodes) {
+        return;
     } else {
-        printf("sono qui: %d\n", d[0]);
         int ii;
-
-        int **candidates = new int *[*nof_sn];                            //indexed by state_id
-        int *candidatesIT = new int[*nof_sn];                            //indexed by state_id
-        int *candidatesSize = new int[*nof_sn];                            //indexed by state_id
-        int *solution = new int[*nof_sn];
+        
+        int **candidates = new int *[nof_sn];                            //indexed by state_id
+        int *candidatesIT = new int[nof_sn];                            //indexed by state_id
+        int *candidatesSize = new int[nof_sn];                            //indexed by state_id
+        int *solution = new int[nof_sn];
 //indexed by state_id
         for (
                 ii = 0;
-                ii < *
-                        nof_sn;
+                ii < nof_sn;
                 ii++) {
             solution[ii] = -1;
         }
 
-        bool **cmatched = (bool **) malloc(*nof_sn * sizeof(bool *));
-        for (int i = 0; i < *nof_sn; i++)
-            cmatched[i] = (bool *) malloc(*r_nof_nodes * sizeof(bool));
-
-        for (int i = 0; i < *nof_sn; ++i) {
-            for (int j = 0; j < *r_nof_nodes; ++j) {
-                cmatched[i][j] = false;
-            }
-        }
-
-
-        bool *matched = (bool *) malloc(sizeof(bool) * (*r_nof_nodes));
-        memset(matched, false, sizeof(bool) * (*r_nof_nodes));
+        bool *matched = (bool *) malloc(sizeof(bool) * (r_nof_nodes));
+        memset(matched, false, sizeof(bool) * (r_nof_nodes));
+        
         candidates[0] = d;
         candidatesSize[0] = 1;
         candidatesIT[0] = -1;
@@ -226,7 +207,7 @@ void subsolver(
             //    printf("sono dentro il while\n");
 
 //steps++;
-
+            
             if (psi >= si) {
                 //printf("psi >= si\n");
                 matched[solution[si]] = false;
@@ -242,23 +223,22 @@ void subsolver(
 //triedcouples++;
                 //  printf("0\n");
                 ci = candidates[si][candidatesIT[si]];
+
                 solution[si] = ci;
                 //  printf("1\n");
                 if ((!matched[ci])
-                    && (cmatched[si][ci] == false)
-                    &&
+                    && 
                     nodeSubCheck(si, ci, map_state_to_node, r_out_adj_sizes, q_out_adj_sizes, r_in_adj_sizes,
                                  q_in_adj_sizes, r_nodes_attrs, r_offset_nodes_attr, q_nodes_attrs, q_offset_nodes_attr,
-                                 *type_comparator
+                                 type_comparator
                     )
                     &&
                     edgesSubCheck(si, ci, solution, matched, edges_sizes, source, target, attr, offset_attr,
                                   flat_edges_indexes, r_out_adj_sizes,
-                                  r_out_adj_list, r_offset_out_adj_list, *type_comparator
+                                  r_out_adj_list, r_offset_out_adj_list, type_comparator
                     )
                         ) {
                     //printf("2\n");
-                    //   printf("sono qui\n");
                     break;
                 } else {
                     // printf("3\n");
@@ -271,43 +251,33 @@ void subsolver(
 
             }
             
-            //  printf("2\n");
-
             if (ci == -1) {
-                //  printf("ci=-1\n");
                 psi = si;
-                for (int i = 0; i < *r_nof_nodes; i++) {
-                    cmatched[si][i] = false;
-                }
+               
                 si--;
-                // printf("si: %d\n", si);
-            } else {
-                // printf("ci!=-1\n");
-                cmatched[si][ci] = true;
+            }
+            else{
                 atomicAdd((int *) matchedcouples, 1);
-                if (si == *nof_sn - 1) {
-                    //   printf("dovrei fare questo\n");
+                if (si == nof_sn - 1) {
+                    matchListener(&printToConsole, matchCount, nof_sn, map_state_to_node, solution);        
 
-                    matchListener(printToConsole, matchCount, *nof_sn, map_state_to_node, solution
-                    );
 
-#ifdef FIRST_MATCH_ONLY
+                    #ifdef FIRST_MATCH_ONLY
                     si = -1;
-#endif
+                    #endif
                     psi = si;
                 } else {
-                    //   printf("si != nof_sn - 1\n");
                     matched[solution[si]] = true;
                     sip1 = si + 1;
 
-
+                    
                     if (parent_type[sip1] == 0) {
-
+                       
                         int r_start_in_adj_list = r_offset_in_adj_list[solution[parent_state[sip1]]];
                         int r_end_in_adj_list = r_offset_in_adj_list[solution[parent_state[sip1]] + 1];
                         int arr_len = r_end_in_adj_list - r_start_in_adj_list;
                         int *arr_r_in_adj_list = (int *) malloc(arr_len * sizeof(int));
-                        int pos = 0;
+                        int pos = 0; 
                         for (
                                 int i = r_start_in_adj_list;
                                 i < r_end_in_adj_list;
@@ -322,23 +292,24 @@ void subsolver(
                         // printf("%d", arr_len == r_in_adj_sizes[solution[parent_state[sip1]]]);
                     } else {//(parent_type[sip1] == MAMA_PARENTTYPE::PARENTTYPE_OUT)
                         //  printf("sono qui dentro\n");
+                        
                         int r_start_out_adj_list = r_offset_out_adj_list[solution[parent_state[sip1]]];
                         int r_end_out_adj_list = r_offset_out_adj_list[solution[parent_state[sip1]] + 1];
                         int arr_len = r_end_out_adj_list - r_start_out_adj_list;
                         int *arr_r_out_adj_list = (int *) malloc(arr_len * sizeof(int));
                         int pos = 0;
+                        
                         for (
                                 int i = r_start_out_adj_list;
                                 i < r_end_out_adj_list;
                                 ++i) {
                             arr_r_out_adj_list[pos] = r_out_adj_list[i];
                             pos++;
-                        }
+                        }                    
                         candidates[sip1] =
                                 arr_r_out_adj_list;
-                        candidatesSize[sip1] =
-                                arr_len;
-                        // printf("arrivo alla fine dell'else\n");
+
+                        candidatesSize[sip1] = arr_len;
                     }
 
                     candidatesIT[si + 1] = -1;
@@ -350,25 +321,11 @@ void subsolver(
         }
 
 // memory cleanup
-/*
-    for (int i = 0; i < *nof_sn; i++)
-        free(cmatched[i]);
-    free(cmatched);
 
-    free(matched);
-    */
-
-        for (int i = 0; i < *nof_sn; i++)
-            delete cmatched[i];
-        delete[] cmatched;
-        delete[] matched;
-
-        delete[]
-                solution;
-        delete[]
-                candidatesSize;
-        delete[]
-                candidatesIT;
+        free(matched);  
+        free(solution);
+        free(candidatesSize);
+    free(candidatesIT);
         delete[]
                 candidates;
         /*
@@ -377,7 +334,6 @@ void subsolver(
         */
     }
 
-    __syncthreads();
 
 }
 
