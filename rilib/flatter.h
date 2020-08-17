@@ -63,18 +63,33 @@ void flatterGraph(Graph *graph)
 
     //flatten out_adj_attrs
     //forse questo non serve, perchè nessun dataset ha archi con label.
-    /*
+    
     //flatten node_attrs
     for (int i = 0; i < graph->nof_nodes; i++)
     {
         for (int j = 0; j < graph->out_adj_sizes[i]; j++){
             if(graph->out_adj_attrs[i][j] != NULL){
                 graph->length_out_adj_attrs += strlen((char *)graph->out_adj_attrs[i][j]);
+                graph->total_count++;
             }
             
         }
     }
-    */
+    graph->flatten_out_adj_attrs = (void*) calloc(graph->length_out_adj_attrs + 1,sizeof(char));
+    graph->offset_out_adj_attrs = (int*) calloc(graph->total_count + 1,sizeof(int));
+    for(int i = 0, int c = 0; i < graph->nof_nodes; i++){
+            for(int j = 0; j <graph->out_adj_sizes[i]; j++){
+                if(graph->out_adj_attrs[i][j] != NULL){
+                    strcat((char * )graph->flatten_out_adj_attrs, (char *)graph->out_adj_attrs[c][j]);
+                    graph->offset_out_adj_attrs[c + j + 1] = graph->offset_out_adj_attrs[c + j] + strlen((char *)graph->out_adj_attrs[c][j]);
+                }
+            }
+
+            c += graph->out_adj_sizes[i];
+
+        }
+    
+
     //in_adj_list
 
     graph->offset_in_adj_list = (int *)malloc((graph->nof_nodes + 1) * sizeof(int));
@@ -144,7 +159,19 @@ void flatterGraph(Graph *graph)
             }
         }
     }
-
+    //test out_adj_list
+    for (int i = 0; i < graph->nof_nodes; i++)
+    {
+        for (int j = 0; j < graph->out_adj_sizes[i]; j++)
+        {
+            if(graph->flatten_out_adj_list[graph -> offset_out_adj_list[i] + j] != graph->out_adj_list[i][j]){
+                printf("test failed 2\n");
+            }
+            else{
+                //printf("test passed\n");
+            }
+        }
+    }
 
 
 }

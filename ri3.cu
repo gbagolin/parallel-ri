@@ -53,7 +53,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 //#define PRINT_MATCHES
 //#define CSV_FORMAT
-#define N_TEST 10
+
+#define N_TEST 31
+
 
 using namespace rilib;
 

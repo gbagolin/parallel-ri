@@ -34,6 +34,7 @@ void * getSubString(void * nodes_attrs,int start, int end){
             return c1 - c2;
         }
     while (c1 == c2);
+    
     return c1 - c2;
     }
 

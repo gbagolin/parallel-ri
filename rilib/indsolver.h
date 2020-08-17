@@ -30,31 +30,29 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef KERNEL_H_
-#define KERNEL_H_
-#define MAX_SIZE 35000
+#ifndef SOLVER_H_
+#define SOLVER_H_
 
 #include "MatchingMachine.h"
 #include "AttributeComparator.h"
 #include "substitutors.h"
 #include "Graph.h"
-#include <set>
+#endif
 
-
+#ifndef INDSOLVER_H_
+#define INDSOLVER_H_
 __device__
 bool
-nodeSubCheck(int si, int ci, int *map_state_to_node, int *r_out_adj_sizes, int *q_out_adj_sizes, int *r_in_adj_sizes,
+nodeIndCheck(int si, int ci, int *map_state_to_node, int *r_out_adj_sizes, int *q_out_adj_sizes, int *r_in_adj_sizes,
              int *q_in_adj_sizes, void *r_nodes_attrs, int *r_offset_nodes_attr, void *q_nodes_attrs,
              int *q_offset_nodes_attr, int comparatorType) {
-
-    //   printf("node_sub_check\n");
-    //  printf("q_nodes_attr : %s\n", q_nodes_attrs);
+ //printf("ci:%d\n",si);
+      // printf("node_sub_check\n");
+    //  printf("q_nodes_attr : %c\n",((char*) q_nodes_attrs)[0]);
     //  printf("r_nodes_attr: %s\n", r_nodes_attrs);
 
     if (r_out_adj_sizes[ci] >= q_out_adj_sizes[map_state_to_node[si]]
         && r_in_adj_sizes[ci] >= q_in_adj_sizes[map_state_to_node[si]]) {
-
-        //  printf("IF node_sub_check\n");
 
         int r_start = r_offset_nodes_attr[ci];
         int r_end = r_offset_nodes_attr[ci + 1];
@@ -69,13 +67,14 @@ nodeSubCheck(int si, int ci, int *map_state_to_node, int *r_out_adj_sizes, int *
         //  printf("END IF node_sub_check\n");
         return nodeComparator(comparatorType, r_str_attr, q_str_attr);
     }
+
     return false;
 }
 
 __device__
-bool edgesSubCheck(int si, int ci, int *solution, bool *matched, int *edges_sizes, int *source, int *target, void *attr,
-                   int *offset_attr,
-                   int *m_flat_edges_indexes, int *r_out_adj_sizes, int *r_out_adj_list, int *r_offset_out_adj_list,
+bool edgesIndCheck(int si, int ci, int *solution, bool *matched, int *edges_sizes, int *o_edges_sizes, int *i_edges_sizes, int *source, int *target, void *attr,
+                   int *offset_attr,void* out_adj_attrs, int* offset_out_adj_attrs,
+                   int *m_flat_edges_indexes, int *r_out_adj_sizes, int *r_out_adj_list, int *r_offset_out_adj_list, int *r_in_adj_sizes, int *r_offset_in_adj_list, int* r_in_adj_list,
                    int comparatorType) {
     if (comparatorType != 2) {
         return true;
@@ -83,7 +82,6 @@ bool edgesSubCheck(int si, int ci, int *solution, bool *matched, int *edges_size
         int tmp_source, tmp_target;
         int ii;
         for (int me = 0; me < edges_sizes[si]; me++) {
-            // printf("siamo qui dentro");
             tmp_source = solution[source[m_flat_edges_indexes[si] + me]];
             tmp_target = solution[target[m_flat_edges_indexes[si] + me]];
 
@@ -96,11 +94,16 @@ bool edgesSubCheck(int si, int ci, int *solution, bool *matched, int *edges_size
 //					else{
 //						break;
 //					}
-                    int start = offset_attr[m_flat_edges_indexes[si] + me];
-                    int end = offset_attr[m_flat_edges_indexes[si] + me + 1];
-                    void *str_attr = getSubString(attr, start, end);
-                    if (edgeComparator(comparatorType, NULL,
-                                       str_attr)) {
+
+
+                    int start1 = offset_attr[m_flat_edges_indexes[si] + me];
+                    int end1 = offset_attr[m_flat_edges_indexes[si] + me + 1];
+//                  void *str_attr1=(void*) getSubString(attr, start1, end1);
+                    int start2 = offset_out_adj_attrs[tmp_source + ii];
+                    int end2 = offset_out_adj_attrs[tmp_source + ii + 1];
+//                   void *str_attr2=(void*) getSubString(out_adj_attrs, start2, end2);
+                    if (edgeComparator(comparatorType,NULL,
+                                       NULL)) {
                         break;
                     }
                 }
@@ -109,13 +112,39 @@ bool edgesSubCheck(int si, int ci, int *solution, bool *matched, int *edges_size
                 return false;
             }
         }
+        
+		int count = 0;
+       
+		for(int ii=0; ii< r_out_adj_sizes[ci]; ii++){
+            int index=r_offset_out_adj_list[ci] + ii;          
+			 if(matched[r_out_adj_list[index]]){
+				count++;
+				if(count > o_edges_sizes[si])
+					return false;
+			}
+            
+		}
+		count = 0;
+        
+		for(int ii=0; ii< r_in_adj_sizes[ci]; ii++){
+           int index=r_offset_in_adj_list[ci] + ii;
+
+		 	if(matched[r_in_adj_list[index]]){
+			 	count++;
+				if(count > i_edges_sizes[si])
+					return false;
+			}
+            
+		}
+        
+        
         return true;
     }
 
 }
 
 __global__
-void subsolver(
+void indsolver(
         //test
         //in_out
         bool *d_printToConsole,
@@ -125,6 +154,8 @@ void subsolver(
         //mama
         int *d_nof_sn,
         int *edges_sizes,
+        int *o_edges_sizes,
+        int *i_edges_sizes,
         int *flat_edges_indexes,
         int *source,
         int *target,
@@ -144,6 +175,7 @@ void subsolver(
         void *r_nodes_attrs,//flatted
         int *r_offset_nodes_attr,
         void *r_out_adj_attrs,
+        int *r_offset_out_adj_attrs,
         //query
         int *q_in_adj_sizes,
         int *q_out_adj_sizes,
@@ -160,10 +192,7 @@ void subsolver(
     __shared__ bool printToConsole;
     __shared__ int type_comparator;
     __shared__ int nof_sn;
-   
 
-
-    
     if (threadIdx.x==0){
         r_nof_nodes = *d_r_nof_nodes;
         printToConsole = *d_printToConsole;
@@ -171,10 +200,15 @@ void subsolver(
         nof_sn =*d_nof_sn;
        
     }
+    
     __syncthreads();
+    
     if (d[0] >= r_nof_nodes) {
         return;
     } else {
+
+ 
+    
         int ii;
         
         int **candidates = new int *[nof_sn];                            //indexed by state_id
@@ -228,14 +262,14 @@ void subsolver(
                 //  printf("1\n");
                 if ((!matched[ci])
                     && 
-                    nodeSubCheck(si, ci, map_state_to_node, r_out_adj_sizes, q_out_adj_sizes, r_in_adj_sizes,
+                    nodeIndCheck(si, ci, map_state_to_node, r_out_adj_sizes, q_out_adj_sizes, r_in_adj_sizes,
                                  q_in_adj_sizes, r_nodes_attrs, r_offset_nodes_attr, q_nodes_attrs, q_offset_nodes_attr,
                                  type_comparator
                     )
                     &&
-                    edgesSubCheck(si, ci, solution, matched, edges_sizes, source, target, attr, offset_attr,
+                    edgesIndCheck(si, ci, solution, matched, edges_sizes, o_edges_sizes, i_edges_sizes, source, target, attr, offset_attr, r_out_adj_attrs, r_offset_out_adj_attrs,
                                   flat_edges_indexes, r_out_adj_sizes,
-                                  r_out_adj_list, r_offset_out_adj_list, type_comparator
+                                  r_out_adj_list, r_offset_out_adj_list, r_in_adj_sizes, r_offset_in_adj_list, r_in_adj_list, type_comparator
                     )
                         ) {
                     //printf("2\n");

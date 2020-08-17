@@ -61,8 +61,8 @@ public:
 	void*** out_adj_attrs;
 	void* flatten_out_adj_attrs; 
 	int length_out_adj_attrs;
-	int * indexes_out_adj_attrs; 
-	//int * offset_out_adj_attrs; 
+	int total_count;
+	int * offset_out_adj_attrs; 
 
 
 	Graph(){
@@ -84,7 +84,8 @@ public:
 		length_in_adj_list = 0; 
 		flatten_out_adj_attrs = NULL; 
 		length_out_adj_attrs = 0; 
-		indexes_out_adj_attrs = NULL; 
+		total_count = 0;
+		offset_out_adj_attrs = NULL; 
 		offset_in_adj_list = NULL; 
 	}
   
@@ -115,7 +116,7 @@ public:
 	//free(length_in_adj_list);  
 	free(flatten_out_adj_attrs); 
 	//free(length_out_adj_attrs); 
-	free(indexes_out_adj_attrs);
+	free(offset_out_adj_attrs);
 	free(offset_in_adj_list); 
   }
 
