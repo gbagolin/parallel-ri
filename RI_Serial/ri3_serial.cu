@@ -213,6 +213,8 @@ int match(
 	long tsteps = 0, ttriedcouples = 0, tmatchedcouples = 0;
 
 	FILE *fd = open_file(referencefile.c_str(), filetype);
+	int nodes;
+
 	if(fd != NULL){
 #ifdef PRINT_MATCHES
 		//to print found matches on screen
@@ -234,7 +236,7 @@ int match(
 			rreaded = (rret == 0);
 			load_t+=end_time(load_s);
 			if(rreaded){
-
+					nodes= rrg->nof_nodes;
 					//run the matching
 					match_s=start_time();
 					match(	*rrg,
@@ -284,6 +286,8 @@ int match(
 	std::cout<<"matching time: "<<match_t<<"\n";
 	std::cout<<"number of found matches: "<<matchcount<<"\n";
 	std::cout<<"search space size: "<<matchedcouples<<"\n";
+	std::cout << "Number of nodes reference graph: " << nodes << "\n";
+
 #endif
 
 //	delete mama;

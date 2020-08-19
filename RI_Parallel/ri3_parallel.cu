@@ -24,6 +24,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <ctime>
@@ -186,6 +187,7 @@ int match(
     matchcount = 0,        //nof found matches
     matchedcouples = 0;        //nof mathed pair (during partial solutions)
     long tsteps = 0, ttriedcouples = 0, tmatchedcouples = 0;
+    int nodes;
     FILE *fd = open_file(referencefile.c_str(), filetype);
     if (fd != NULL) {
         bool printToConsole = false;
@@ -215,8 +217,8 @@ int match(
             load_t += end_time(load_s);
 
             if (rreaded) {
-      
-
+                
+                nodes = rrg->nof_nodes;
                 count++;
               
                 reference_malloc(*rrg);
@@ -280,19 +282,17 @@ int match(
 #else
     std::cout << match_t << "\n";
 
-    printf("reference file: %s \n",referencefile.c_str());
-    printf("query file: %s \n",queryfile.c_str());
+   // std::cout << "reference file: " << referencefile << "\n";
+   // std::cout << "query file: " << queryfile << "\n";
     std::cout << "total time: " << total_t << "\n";
     std::cout << "matching time: " << match_t << "\n";
     std::cout << "number of found matches: " << matchcount << "\n";
     std::cout << "search space size: " << matchedcouples << "\n";
-    cout << "Pattern Graph load time " << load_t_q << endl;
-    cout << "Target Graphs load time " << load_t << endl;
-    cout << "mama time: " << make_mama_t << endl;
+    std::cout << "Number of nodes reference graph: " << nodes << "\n";
     std::cout << "CudaMalloc time "<<cuda_malloc_t<<std::endl;
     std::cout << "CudaFree time "<<cuda_free_t<<std::endl;
     std::cout << "Device Reset time "<<device_reset_t<<std::endl;
-    std::cout << "Device memory heap definition time "<<device_memory_t<<std::endl;
+    std::cout << "Device memory heap management time "<<device_memory_t<<std::endl;
 #endif
     delete mama;
     delete query;

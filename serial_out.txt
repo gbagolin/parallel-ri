@@ -1,7 +1,8 @@
-0.122667
-reference file: ../RI-Datasets/PDBSv1/grouped/singles_all.gff
-query file: ../RI-Datasets/PDBSv1/grouped/queries_4_all.gff
-total time: 0.315725
-matching time: 0.122667
-number of found matches: 10039
-search space size: 152985
+0.003423
+reference file: DataSet/Reference/reference_pdbsv1_16.gff
+query file: DataSet/Query/query_pdbsv1_16.gff
+total time: 0.0151276
+matching time: 0.003423
+number of found matches: 357
+search space size: 2645
+Number of nodes reference graph: 11010

@@ -1,8 +1,10 @@
-./RI_Parallel/ri36 mono gfu ../RI-Datasets/PDBSv1/grouped/singles_all.gff ../RI-Datasets/PDBSv1/grouped/queries_4_all.gff > parallel_out.txt
-./RI_Serial/ri36 mono gfu ../RI-Datasets/PDBSv1/grouped/singles_all.gff ../RI-Datasets/PDBSv1/grouped/queries_4_all.gff > serial_out.txt
+i=0
+while read p; do
+i=$(($i+1))
+echo "--------------------------------------TEST $i------------------------------------------"
+eval "./RI_Parallel/ri36 mono gfu $p > parallel_out.txt"
+eval "./RI_Serial/ri36 mono gfu $p > serial_out.txt"
 
-
-echo
 echo Parallel code info:
 echo
 sed 1d  parallel_out.txt
@@ -15,3 +17,6 @@ a=`head -1 parallel_out.txt`
 b=`head -1 serial_out.txt`
 echo Speedup:
 awk "BEGIN {print $b/$a}"
+echo "---------------------------------------------------------------------------------------"
+
+done < commands.txt
