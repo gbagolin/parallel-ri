@@ -40,7 +40,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "mallocUtility.h"
 #include "CheckError.cuh"
 
-#define BLOCK_DIM 1024
+#define BLOCK_DIM 512
 
 namespace rilib {
 
