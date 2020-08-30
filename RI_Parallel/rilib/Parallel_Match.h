@@ -117,6 +117,7 @@ namespace rilib {
                         d_r_offset_nodes_attr,
                         d_r_out_adj_attrs,
                         d_r_offset_out_adj_attrs,
+                        d_r_indexes_out_adj_attrs,
                         //query
                         d_q_in_adj_sizes,
                         d_q_out_adj_sizes,
@@ -158,6 +159,7 @@ namespace rilib {
                         d_r_offset_nodes_attr,
                         d_r_out_adj_attrs,
                         d_r_offset_out_adj_attrs,
+                        d_r_indexes_out_adj_attrs,
                         //query
                         d_q_in_adj_sizes,
                         d_q_out_adj_sizes,
@@ -199,6 +201,7 @@ namespace rilib {
                         d_r_offset_nodes_attr,
                         d_r_out_adj_attrs,
                         d_r_offset_out_adj_attrs,
+                        d_r_indexes_out_adj_attrs,
                         //query
                         d_q_in_adj_sizes,
                         d_q_out_adj_sizes,

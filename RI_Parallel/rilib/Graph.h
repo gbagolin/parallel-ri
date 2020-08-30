@@ -63,6 +63,7 @@ public:
 	int length_out_adj_attrs;
 	int total_count;
 	int * offset_out_adj_attrs; 
+	int * indexes_out_adj_attrs; 
 
 
 	Graph(){
@@ -87,6 +88,7 @@ public:
 		total_count = 0;
 		offset_out_adj_attrs = NULL; 
 		offset_in_adj_list = NULL; 
+		indexes_out_adj_attrs = NULL;
 	}
   
   ~Graph() {
@@ -98,7 +100,6 @@ public:
       free(in_adj_list[i]);
       free(out_adj_list[i]);
       free(nodes_attrs[i]);
-
     }
     free(out_adj_attrs);
     free(in_adj_list);
@@ -118,6 +119,7 @@ public:
 	//free(length_out_adj_attrs); 
 	free(offset_out_adj_attrs);
 	free(offset_in_adj_list); 
+	free(indexes_out_adj_attrs); 
   }
 
 

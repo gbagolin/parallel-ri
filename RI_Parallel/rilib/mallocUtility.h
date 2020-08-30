@@ -49,6 +49,7 @@ void *d_r_flatten_nodes_attr;
 int *d_r_offset_nodes_attr;
 void *d_r_out_adj_attrs=NULL;
 int *d_r_offset_out_adj_attrs=NULL;
+int *d_r_indexes_out_adj_attrs=NULL;
 
 //query
 int *d_q_flatten_in_adj_list;
@@ -59,6 +60,7 @@ int *d_q_offset_out_adj_list;
 int *d_q_out_adj_sizes;
 void *d_q_flatten_nodes_attr;
 int *d_q_offset_nodes_attr;
+
 
 int comparatorType;
 
@@ -158,6 +160,7 @@ void mama_malloc(MatchingMachine &matchingMachine) {
 
 void reference_malloc(Graph &reference) {
     cuda_malloc_s= start_time();
+
     SAFE_CALL(cudaMalloc(&d_r_nof_nodes, sizeof(int) * 1));
 
     SAFE_CALL(cudaMalloc(&d_r_flatten_in_adj_list, sizeof(int) * reference.length_in_adj_list));
@@ -179,6 +182,8 @@ void reference_malloc(Graph &reference) {
     SAFE_CALL(cudaMalloc(&d_r_out_adj_attrs, sizeof(char) * reference.length_out_adj_attrs));
 
     SAFE_CALL(cudaMalloc(&d_r_offset_out_adj_attrs, sizeof(int) * (reference.total_count + 1)));
+
+    SAFE_CALL(cudaMalloc(&d_r_indexes_out_adj_attrs, sizeof(int) * (reference.nof_nodes)));
 
     cuda_malloc_t+=end_time(cuda_malloc_s);
 
@@ -221,6 +226,10 @@ void reference_memcpy(Graph &reference){
 
     SAFE_CALL(cudaMemcpy(d_r_offset_out_adj_attrs, reference.offset_out_adj_attrs, sizeof(int) * (reference.total_count + 1),
                          cudaMemcpyHostToDevice));
+
+    SAFE_CALL(cudaMemcpy(d_r_indexes_out_adj_attrs, reference.indexes_out_adj_attrs, sizeof(int) * (reference.nof_nodes),
+                         cudaMemcpyHostToDevice));
+                         
     cuda_malloc_t+=end_time(cuda_malloc_s);
 }
 

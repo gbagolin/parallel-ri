@@ -2,7 +2,7 @@
 #define FLATTER_H_
 
 /*
-								[1][0]
+								[1][1]
 		indexes: [0,4,8,10,13,17,23,28]
 		offset: [0,3,5,7]
 		[
@@ -69,18 +69,18 @@ void flatterGraph(Graph *graph)
     {
         for (int j = 0; j < graph->out_adj_sizes[i]; j++){ 
             graph->total_count++;
-
             if(graph->out_adj_attrs[i][j] != NULL){
                 graph->length_out_adj_attrs += strlen((char *)graph->out_adj_attrs[i][j]);
-
             }
-            
         }
     }
 
     graph->flatten_out_adj_attrs = (void*) calloc(graph->length_out_adj_attrs + 1,sizeof(char));
     graph->offset_out_adj_attrs = (int*) calloc(graph->total_count + 1,sizeof(int));
+    graph->indexes_out_adj_attrs = (int*) calloc(graph->nof_nodes,sizeof(int));
+
     for(int i = 0, int c = 0; i < graph->nof_nodes; i++){
+        graph->indexes_out_adj_attrs[i] = c; 
             for(int j = 0; j <graph->out_adj_sizes[i]; j++){
                 if(graph->out_adj_attrs[i][j] != NULL){
                     strcat((char * )graph->flatten_out_adj_attrs, (char *)graph->out_adj_attrs[c][j]);

@@ -150,6 +150,7 @@ void isosolver(
         int *r_offset_nodes_attr,
         void *r_out_adj_attrs,
         int *r_offset_out_adj_attrs,
+        int *r_indexes_out_adj_attrs,
         //query
         int *q_in_adj_sizes,
         int *q_out_adj_sizes,

@@ -63,7 +63,7 @@ nodeSubCheck(int si, int ci, int *map_state_to_node, int *r_out_adj_sizes, int *
 
 __device__
 bool edgesSubCheck(int si, int ci, int *solution, bool *matched, int *edges_sizes, int *source, int *target, void *attr,
-                   int *offset_attr,void* out_adj_attrs, int* offset_out_adj_attrs,
+                   int *offset_attr,void* out_adj_attrs, int* offset_out_adj_attrs,int * indexes_out_adj_attrs,
                    int *m_flat_edges_indexes, int *r_out_adj_sizes, int *r_out_adj_list, int *r_offset_out_adj_list,
                    int comparatorType) {
     if (comparatorType != 2) {
@@ -87,11 +87,11 @@ bool edgesSubCheck(int si, int ci, int *solution, bool *matched, int *edges_size
                     int start1 = offset_attr[m_flat_edges_indexes[si] + me];
                     int end1 = offset_attr[m_flat_edges_indexes[si] + me + 1];
                     void *str_attr1=(void*) getSubString(attr, start1, end1);
-                    int start2 = offset_out_adj_attrs[tmp_source + ii];
-                    int end2 = offset_out_adj_attrs[tmp_source + ii + 1];
+                    int start2 = offset_out_adj_attrs[indexes_out_adj_attrs[tmp_source] + ii];
+                    int end2 = offset_out_adj_attrs[indexes_out_adj_attrs[tmp_source] + ii + 1];
                     void *str_attr2=(void*) getSubString(out_adj_attrs, start2, end2);
                     printf("%s\n",str_attr2);
-                    if (edgeComparator(comparatorType,NULL,
+                    if (edgeComparator(comparatorType,str_attr1,
                                        str_attr2)) {
                         break;
                     }
@@ -138,6 +138,7 @@ void subsolver(
         int *r_offset_nodes_attr,
         void *r_out_adj_attrs,
         int *r_offset_out_adj_attrs,
+        int *r_indexes_out_adj_attrs,
         //query
         int *q_in_adj_sizes,
         int *q_out_adj_sizes,
@@ -225,7 +226,7 @@ void subsolver(
                                  type_comparator
                     )
                     &&
-                    edgesSubCheck(si, ci, solution, matched, edges_sizes, source, target, attr, offset_attr, r_out_adj_attrs, r_offset_out_adj_attrs,
+                    edgesSubCheck(si, ci, solution, matched, edges_sizes, source, target, attr, offset_attr, r_out_adj_attrs, r_offset_out_adj_attrs, r_indexes_out_adj_attrs,
                                   flat_edges_indexes, r_out_adj_sizes,
                                   r_out_adj_list, r_offset_out_adj_list, type_comparator
                     )
