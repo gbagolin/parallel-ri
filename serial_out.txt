@@ -1,8 +1,8 @@
-0.0056497
+0.0034617
 reference file: DataSet/Reference/reference_pdbsv1_16.gff
 query file: DataSet/Query/query_pdbsv1_16.gff
-total time: 0.0289863
-matching time: 0.0056497
+total time: 0.0153325
+matching time: 0.0034617
 number of found matches: 357
 search space size: 2645
 Number of nodes reference graph: 11010

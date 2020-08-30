@@ -1,10 +1,10 @@
-0.0187523
-total time: 0.694422
-matching time: 0.0187523
+0.0190629
+total time: 0.7526
+matching time: 0.0190629
 number of found matches: 357
 search space size: 2645
 Number of nodes reference graph: 11010
-CudaMalloc time 0.197054
-CudaFree time 0.0006933
-Device Reset time 0.0130508
-Device memory heap management time 5.3e-06
+CudaMalloc time 0.187802
+CudaFree time 0.0008664
+Device Reset time 0.0130157
+Device memory heap management time 5.4e-06
